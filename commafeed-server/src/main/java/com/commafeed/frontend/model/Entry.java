@@ -104,7 +104,8 @@ public class Entry implements Serializable {
 
 	@Schema(description = "tags", requiredMode = RequiredMode.REQUIRED)
 	private List<String> tags;
-
+	@Schema(description = "entry summary")
+	private String summary;
 	public static Entry build(FeedEntryStatus status, boolean proxyImages) {
 		Entry entry = new Entry();
 
@@ -126,7 +127,7 @@ public class Entry implements Serializable {
 		entry.setFeedLink(sub.getFeed().getLink());
 		entry.setIconUrl(FeedUtils.getFaviconUrl(sub));
 		entry.setTags(status.getTags().stream().map(FeedEntryTag::getName).toList());
-
+		entry.setSummary(status.getEntry().getSummary());
 		if (content != null) {
 			entry.setRtl(content.isRTL());
 			entry.setTitle(content.getTitle());

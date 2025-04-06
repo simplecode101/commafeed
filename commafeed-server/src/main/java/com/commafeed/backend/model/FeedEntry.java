@@ -57,4 +57,6 @@ public class FeedEntry extends AbstractModel {
 	@OneToMany(mappedBy = "entry", cascade = CascadeType.REMOVE)
 	private Set<FeedEntryTag> tags;
 
+	@Column
+	private String summary;
 }

@@ -28,6 +28,7 @@ import com.commafeed.backend.model.UserRole;
 import com.commafeed.backend.model.UserRole.Role;
 import com.commafeed.backend.service.PasswordEncryptionService;
 import com.commafeed.backend.service.UserService;
+import com.commafeed.backend.task.SummaryFeedsTask;
 import com.commafeed.frontend.model.UserModel;
 import com.commafeed.frontend.model.request.AdminSaveUserRequest;
 import com.commafeed.frontend.model.request.IDRequest;
@@ -60,6 +61,7 @@ public class AdminREST {
 	private final UserService userService;
 	private final PasswordEncryptionService encryptionService;
 	private final MetricRegistry metrics;
+	private SummaryFeedsTask summaryFeedsTask;
 
 	@Path("/user/save")
 	@POST
@@ -188,12 +190,10 @@ public class AdminREST {
 		return Response.ok().build();
 	}
 
-	@Path("/metrics")
+	@Path("/summary")
 	@GET
-	@Transactional
-	@Operation(summary = "Retrieve server metrics")
-	public Response getMetrics() {
-		return Response.ok(metrics).build();
+	public Response summary() {
+		summaryFeedsTask.run();
+		return Response.ok().build();
 	}
-
 }

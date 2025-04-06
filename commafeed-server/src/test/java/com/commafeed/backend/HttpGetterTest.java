@@ -186,7 +186,7 @@ class HttpGetterTest {
 		this.getter = new HttpGetter(config, () -> NOW, Mockito.mock(CommaFeedVersion.class), Mockito.mock(MetricRegistry.class));
 		// try to connect to a non-routable address
 		// https://stackoverflow.com/a/904609
-		Assertions.assertThrows(ConnectTimeoutException.class, () -> getter.get("http://10.255.255.1"));
+		Assertions.assertThrows(ConnectTimeoutException.class, () -> getter.get("http://192.0.2.1"));
 	}
 
 	@Test

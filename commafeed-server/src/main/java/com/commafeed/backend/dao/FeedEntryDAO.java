@@ -64,6 +64,14 @@ public class FeedEntryDAO extends GenericDAO<FeedEntry> {
 		return delete(list);
 	}
 
+	public List<FeedEntry> findNotSummaries(int limit) {
+		return query().selectFrom(ENTRY)
+				.where(ENTRY.summary.isEmpty().or(ENTRY.summary.isNull()))
+				.orderBy(ENTRY.published.asc())
+				.limit(limit)
+				.fetch();
+	}
+
 	@AllArgsConstructor
 	@Getter
 	public static class FeedCapacity {
