@@ -26,6 +26,8 @@
 				<version>1.15.1</version>
 				  <configuration>
 					<installNode>false</installNode>
+					<nodeExecutable>node</nodeExecutable>
+        			<npmExecutable>npm</npmExecutable>
 				</configuration>
 				<?m2e ignore?>
 				<executions>
