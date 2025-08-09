@@ -1,0 +1,15 @@
+FROM docker.1ms.run/ibm-semeru-runtimes:open-21.0.6_7-jre@sha256:fc0d0c8b2ea5b97bc362e8f90151ed62739cb6f758938203ea0370bc6b9c6659
+EXPOSE 8082
+
+RUN mkdir -p /commafeed/data
+VOLUME /commafeed/data
+
+COPY commafeed-5.7.0-h2/ /commafeed
+WORKDIR /commafeed
+
+CMD ["java", \
+    "-Xtune:virtualized", \
+    "-Xminf0.05", \
+    "-Xmaxf0.1", \
+    "-jar", \
+    "quarkus-run.jar"]

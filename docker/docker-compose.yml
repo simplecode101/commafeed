@@ -1,0 +1,12 @@
+services:
+  commafeed:
+    image: test
+    restart: unless-stopped
+    volumes:
+      - ./data:/commafeed/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    ports:
+      - 8082:8082
