@@ -1,5 +1,7 @@
 package com.commafeed.backend.dao;
 
+import java.util.List;
+
 import jakarta.inject.Singleton;
 import jakarta.persistence.EntityManager;
 
@@ -29,5 +31,9 @@ public class UserDAO extends GenericDAO<User> {
 
 	public long count() {
 		return query().select(USER.count()).from(USER).fetchOne();
+	}
+
+	public List<User> findAll() {
+		return query().selectFrom(USER).fetch();
 	}
 }

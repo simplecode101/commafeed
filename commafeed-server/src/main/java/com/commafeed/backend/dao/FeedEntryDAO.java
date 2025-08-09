@@ -66,7 +66,7 @@ public class FeedEntryDAO extends GenericDAO<FeedEntry> {
 
 	public List<FeedEntry> findNotSummaries(int limit) {
 		return query().selectFrom(ENTRY)
-				.where(ENTRY.summary.isEmpty().or(ENTRY.summary.isNull()))
+				.where(ENTRY.retryTimes.loe(3).and(ENTRY.summary.isEmpty().or(ENTRY.summary.isNull())))
 				.orderBy(ENTRY.published.asc())
 				.limit(limit)
 				.fetch();

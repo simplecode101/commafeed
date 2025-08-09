@@ -106,6 +106,7 @@ public class Entry implements Serializable {
 	private List<String> tags;
 	@Schema(description = "entry summary")
 	private String summary;
+
 	public static Entry build(FeedEntryStatus status, boolean proxyImages) {
 		Entry entry = new Entry();
 

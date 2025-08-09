@@ -37,7 +37,7 @@ function LogoAndTitle() {
         <Center inline onClick={async () => await dispatch(redirectToRootCategory())} style={{ cursor: "pointer" }}>
             <Logo size={24} />
             <Title order={3} pl="md">
-                CommaFeed
+                CommaFeed-AI1.0
             </Title>
         </Center>
     )

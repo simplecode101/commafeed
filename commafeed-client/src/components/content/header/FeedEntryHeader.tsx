@@ -26,7 +26,14 @@ const useStyles = tss
             fontSize: "90%",
         },
     }))
-
+const failed = "❌"
+const success = "✅"
+const summaryResult = (summary: string | undefined) => {
+    if (!summary) {
+        return ""
+    }
+    return summary === "request failed" ? failed : success
+}
 export function FeedEntryHeader(props: FeedEntryHeaderProps) {
     const { classes } = useStyles({
         read: props.entry.read,
@@ -41,6 +48,7 @@ export function FeedEntryHeader(props: FeedEntryHeaderProps) {
                         </Box>
                     )}
                     <FeedEntryTitle entry={props.entry} />
+                    {summaryResult(props.entry.summary)}
                 </Flex>
                 {props.showExternalLinkIcon && <OpenExternalLink entry={props.entry} />}
             </Flex>

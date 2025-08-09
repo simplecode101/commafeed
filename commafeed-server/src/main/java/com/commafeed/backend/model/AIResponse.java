@@ -6,11 +6,13 @@ import lombok.Data;
 
 @Data
 public class AIResponse {
+
 	private int code;
 	private RespData data;
 
 	@Data
 	public static class RespData {
+
 		private String summary;
 		private String tags;
 		@JsonProperty("input_token")
@@ -19,4 +21,5 @@ public class AIResponse {
 		private Integer outputToken;
 
 	}
+
 }

@@ -59,4 +59,10 @@ public class FeedEntry extends AbstractModel {
 
 	@Column
 	private String summary;
+
+	/**
+	 * number of times the entry has been retried for summary
+	 */
+	@Column(name = "RETRY_TIMES")
+	private Integer retryTimes;
 }

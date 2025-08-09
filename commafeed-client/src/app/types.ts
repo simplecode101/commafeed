@@ -79,6 +79,7 @@ export interface Entry {
     starred: boolean
     markable: boolean
     tags: string[]
+    summary?: string
 }
 
 export interface Entries {

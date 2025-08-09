@@ -15,6 +15,8 @@ export function FeedEntryBody(props: FeedEntryBodyProps) {
         <Box>
             <Box>
                 <Content content={props.entry.content} highlight={search} />
+                <span>===== AI总结: =====</span>
+                {props.entry.summary && <Content content={props.entry.summary} highlight={search} />}
             </Box>
             {props.entry.enclosureType && props.entry.enclosureUrl && (
                 <Box pt="md">
