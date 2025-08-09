@@ -30,7 +30,7 @@
 				</configuration>
 				<?m2e ignore?>
 				<executions>
-					<!-- <execution>
+					<execution>
 						<id>install node and npm</id>
 						<goals>
 							<goal>install-node-and-npm</goal>
@@ -40,7 +40,7 @@
 							<nodeVersion>${node.version}</nodeVersion>
 							<npmVersion>${npm.version}</npmVersion>
 						</configuration>
-					</execution> -->
+					</execution> 
 					<execution>
 						<id>npm install</id>
 						<goals>
@@ -49,8 +49,6 @@
 						<phase>compile</phase>
 						<configuration>
 							<arguments>ci</arguments>
-							<nodeExecutable>node</nodeExecutable>
-        			<npmExecutable>npm</npmExecutable>
 						</configuration>
 					</execution>
 					<execution>
@@ -62,8 +60,6 @@
 						<configuration>
 							<arguments>run test:ci</arguments>
 							<skip>${skipTests}</skip>
-							<nodeExecutable>node</nodeExecutable>
-        			<npmExecutable>npm</npmExecutable>
 						</configuration>
 					</execution>
 					<execution>
@@ -74,8 +70,6 @@
 						<phase>compile</phase>
 						<configuration>
 							<arguments>run build</arguments>
-							<nodeExecutable>node</nodeExecutable>
-        			<npmExecutable>npm</npmExecutable>
 						</configuration>
 					</execution>
 				</executions>
