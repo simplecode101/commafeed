@@ -24,10 +24,6 @@
 				<groupId>com.github.eirslett</groupId>
 				<artifactId>frontend-maven-plugin</artifactId>
 				<version>1.15.1</version>
-				  <configuration>
-					<installNode>false</installNode>
-					
-				</configuration>
 				<?m2e ignore?>
 				<executions>
 					<execution>
