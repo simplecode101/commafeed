@@ -26,8 +26,7 @@
 				<version>1.15.1</version>
 				  <configuration>
 					<installNode>false</installNode>
-					<nodeExecutable>node</nodeExecutable>
-        			<npmExecutable>npm</npmExecutable>
+					
 				</configuration>
 				<?m2e ignore?>
 				<executions>
@@ -50,6 +49,8 @@
 						<phase>compile</phase>
 						<configuration>
 							<arguments>ci</arguments>
+							<nodeExecutable>node</nodeExecutable>
+        			<npmExecutable>npm</npmExecutable>
 						</configuration>
 					</execution>
 					<execution>
@@ -61,6 +62,8 @@
 						<configuration>
 							<arguments>run test:ci</arguments>
 							<skip>${skipTests}</skip>
+							<nodeExecutable>node</nodeExecutable>
+        			<npmExecutable>npm</npmExecutable>
 						</configuration>
 					</execution>
 					<execution>
@@ -71,6 +74,8 @@
 						<phase>compile</phase>
 						<configuration>
 							<arguments>run build</arguments>
+							<nodeExecutable>node</nodeExecutable>
+        			<npmExecutable>npm</npmExecutable>
 						</configuration>
 					</execution>
 				</executions>
