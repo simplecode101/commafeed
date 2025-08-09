@@ -15,7 +15,7 @@
 		<!-- renovate: datasource=node-version depName=node -->
 		<node.version>v22.14.0</node.version>
 		<!-- renovate: datasource=npm depName=npm -->
-		<npm.version>11.2.0</npm.version>
+		<npm.version>10.9.2</npm.version>
 	</properties>
 
 	<build>
@@ -24,6 +24,9 @@
 				<groupId>com.github.eirslett</groupId>
 				<artifactId>frontend-maven-plugin</artifactId>
 				<version>1.15.1</version>
+				  <configuration>
+					<installNode>false</installNode>
+				</configuration>
 				<?m2e ignore?>
 				<executions>
 					<!-- <execution>
