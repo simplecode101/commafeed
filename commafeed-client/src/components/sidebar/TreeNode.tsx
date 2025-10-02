@@ -1,8 +1,8 @@
 import { Box, Center } from "@mantine/core"
-import type { EntrySourceType } from "app/entries/slice"
-import { FeedFavicon } from "components/content/FeedFavicon"
 import type React from "react"
-import { tss } from "tss"
+import type { EntrySourceType } from "@/app/entries/slice"
+import { FeedFavicon } from "@/components/content/FeedFavicon"
+import { tss } from "@/tss"
 import { UnreadCount } from "./UnreadCount"
 
 interface TreeNodeProps {
@@ -15,6 +15,7 @@ interface TreeNodeProps {
     expanded?: boolean
     level: number
     hasError: boolean
+    hasNewEntries: boolean
     onClick: (e: React.MouseEvent, id: string) => void
     onIconClick?: (e: React.MouseEvent, id: string) => void
 }
@@ -58,7 +59,7 @@ const useStyles = tss
         }
     })
 
-export function TreeNode(props: TreeNodeProps) {
+export function TreeNode(props: Readonly<TreeNodeProps>) {
     const { classes } = useStyles({
         selected: props.selected,
         hasError: props.hasError,
@@ -68,19 +69,19 @@ export function TreeNode(props: TreeNodeProps) {
         <Box
             py={1}
             pl={props.level * 20}
-            className={classes.node}
+            className={`${classes.node} cf-treenode cf-treenode-${props.type}`}
             onClick={(e: React.MouseEvent) => props.onClick(e, props.id)}
             data-id={props.id}
             data-type={props.type}
             data-unread-count={props.unread}
         >
-            <Box mr={6} onClick={(e: React.MouseEvent) => props.onIconClick?.(e, props.id)}>
+            <Box mr={6} onClick={(e: React.MouseEvent) => props.onIconClick?.(e, props.id)} className="cf-treenode-icon">
                 <Center>{typeof props.icon === "string" ? <FeedFavicon url={props.icon} /> : props.icon}</Center>
             </Box>
             <Box className={classes.nodeText}>{props.name}</Box>
             {!props.expanded && (
-                <Box>
-                    <UnreadCount unreadCount={props.unread} />
+                <Box className="cf-treenode-unread-count">
+                    <UnreadCount unreadCount={props.unread} showIndicator={props.hasNewEntries} />
                 </Box>
             )}
         </Box>

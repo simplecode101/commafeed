@@ -18,8 +18,8 @@ msgid "<0>CommaFeed is an open-source project. Sources are hosted on </0><1>GitH
 msgstr "<0>CommaFeed est un projet open-source. Les sources sont hébergées sur </0><1>GitHub</1>."
 
 #: src/pages/app/FeedDetailsPage.tsx
-msgid "<0>Complete syntax is available </0><1>here</1>."
-msgstr "<0>La syntaxe complète est disponible </0><1>ici</1>."
+msgid "<0>Complete syntax is available </0><1>here</1><2>.</2>"
+msgstr "<0>La syntaxe complète est disponible </0><1>ici</1><2>.</2>"
 
 #: src/pages/auth/RegistrationPage.tsx
 msgid "<0>Have an account?</0><1>Log in!</1>"
@@ -33,8 +33,8 @@ msgstr "<0>Salut,</0><1>Je m'appelle Jérémie, je suis belge, et je développe 
 msgid "<0>Need an account?</0><1>Sign up!</1>"
 msgstr "<0>Besoin d'un compte ?</0><1>Enregistrez-vous !</1>"
 
-#: src/pages/app/AboutPage.tsx
 #: src/components/header/ProfileMenu.tsx
+#: src/pages/app/AboutPage.tsx
 msgid "About"
 msgstr "À propos"
 
@@ -54,15 +54,17 @@ msgstr "Ajouter une catégorie"
 msgid "Add user"
 msgstr "Ajouter un utilisateur"
 
-#: src/pages/admin/AdminUsersPage.tsx
-#: src/components/header/ProfileMenu.tsx
 #: src/components/admin/UserEdit.tsx
+#: src/components/header/ProfileMenu.tsx
+#: src/pages/admin/AdminUsersPage.tsx
 msgid "Admin"
 msgstr "Administrateur"
 
-#: src/components/sidebar/Tree.tsx
-#: src/components/header/Header.tsx
 #: src/components/content/add/CategorySelect.tsx
+#: src/components/header/Header.tsx
+#: src/components/sidebar/Tree.tsx
+#: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedEntriesPage.tsx
 msgid "All"
 msgstr "Tout"
 
@@ -103,11 +105,11 @@ msgstr "Êtes-vous sûr de vouloir supprimer l'utilisateur <0>{userName}</0> ?"
 msgid "Are you sure you want to delete your account? There's no turning back!"
 msgstr "Êtes-vous sûr de vouloir supprimer définitivement votre compte ?"
 
-#: src/components/header/MarkAllAsReadButton.tsx
+#: src/components/MarkAllAsReadConfirmationDialog.tsx
 msgid "Are you sure you want to mark all entries of <0>{sourceLabel}</0> as read?"
 msgstr "Êtes-vous sûr de vouloir marquer toutes les entrées de <0>{sourceLabel}</0> comme lues ?"
 
-#: src/components/header/MarkAllAsReadButton.tsx
+#: src/components/MarkAllAsReadConfirmationDialog.tsx
 msgid "Are you sure you want to mark entries older than {threshold} days of <0>{sourceLabel}</0> as read?"
 msgstr "Êtes-vous sûr de vouloir marquer les entrées de <0>{sourceLabel}</0> plus anciennes que {threshold} jours comme lues ?"
 
@@ -131,6 +133,10 @@ msgstr "Retour"
 msgid "Back to log in"
 msgstr "Retour à la connexion"
 
+#: src/components/settings/DisplaySettings.tsx
+msgid "Blue"
+msgstr "Bleu"
+
 #: src/components/KeyboardShortcutsHelp.tsx
 msgid "Browser extension required for Chrome"
 msgstr "L'extension navigateur est nécessaire sur Chrome"
@@ -143,27 +149,27 @@ msgstr "Extension navigateur"
 msgid "Browser tab"
 msgstr "Onglet navigateur"
 
-#: src/pages/app/TagDetailsPage.tsx
-#: src/pages/app/FeedDetailsPage.tsx
-#: src/pages/app/FeedDetailsPage.tsx
-#: src/pages/app/CategoryDetailsPage.tsx
-#: src/pages/app/CategoryDetailsPage.tsx
-#: src/pages/admin/AdminUsersPage.tsx
-#: src/components/settings/ProfileSettings.tsx
-#: src/components/settings/ProfileSettings.tsx
-#: src/components/settings/CustomCodeSettings.tsx
-#: src/components/header/MarkAllAsReadButton.tsx
-#: src/components/content/add/ImportOpml.tsx
-#: src/components/content/add/AddCategory.tsx
 #: src/components/admin/UserEdit.tsx
+#: src/components/content/add/AddCategory.tsx
+#: src/components/content/add/ImportOpml.tsx
+#: src/components/MarkAllAsReadConfirmationDialog.tsx
+#: src/components/settings/CustomCodeSettings.tsx
+#: src/components/settings/ProfileSettings.tsx
+#: src/components/settings/ProfileSettings.tsx
+#: src/pages/admin/AdminUsersPage.tsx
+#: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
+#: src/pages/app/TagDetailsPage.tsx
 msgid "Cancel"
 msgstr "Annuler"
 
-#: src/pages/app/FeedDetailsPage.tsx
-#: src/pages/app/AboutPage.tsx
+#: src/components/content/add/AddCategory.tsx
+#: src/components/content/add/AddCategory.tsx
 #: src/components/content/add/Subscribe.tsx
-#: src/components/content/add/AddCategory.tsx
-#: src/components/content/add/AddCategory.tsx
+#: src/pages/app/AboutPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
 msgid "Category"
 msgstr "Catégorie"
 
@@ -203,11 +209,11 @@ msgstr "CommaFeed version {version} ({revision})."
 msgid "Compact"
 msgstr "Compact"
 
-#: src/pages/app/FeedDetailsPage.tsx
-#: src/pages/app/CategoryDetailsPage.tsx
-#: src/pages/admin/AdminUsersPage.tsx
+#: src/components/MarkAllAsReadConfirmationDialog.tsx
 #: src/components/settings/ProfileSettings.tsx
-#: src/components/header/MarkAllAsReadButton.tsx
+#: src/pages/admin/AdminUsersPage.tsx
+#: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
 msgid "Confirm"
 msgstr "Confirmer"
 
@@ -239,7 +245,12 @@ msgstr "Code CSS personnalisé qui sera appliqué"
 msgid "Custom JS code that will be executed on page load"
 msgstr "Code JS personnalisé qui sera appliqué au chargement des pages"
 
+#: src/components/settings/DisplaySettings.tsx
+msgid "Cyan"
+msgstr "Cyan"
+
 #: src/components/header/ProfileMenu.tsx
+#: src/components/settings/DisplaySettings.tsx
 msgid "Dark"
 msgstr "Foncé"
 
@@ -272,13 +283,14 @@ msgstr "Descendant"
 msgid "Detailed"
 msgstr "Vue détaillée"
 
-#: src/pages/app/SettingsPage.tsx
 #: src/components/header/ProfileMenu.tsx
+#: src/components/settings/DisplaySettings.tsx
+#: src/pages/app/SettingsPage.tsx
 msgid "Display"
 msgstr "Affichage"
 
-#: src/pages/app/DonatePage.tsx
 #: src/components/header/ProfileMenu.tsx
+#: src/pages/app/DonatePage.tsx
 msgid "Donate"
 msgstr "Faire un don"
 
@@ -290,11 +302,11 @@ msgstr "Télécharger"
 msgid "Drag link to bookmark bar"
 msgstr "Déplacez le lien vers la barre de favoris"
 
-#: src/pages/auth/PasswordRecoveryPage.tsx
-#: src/pages/auth/PasswordRecoveryPage.tsx
-#: src/pages/admin/AdminUsersPage.tsx
-#: src/components/settings/ProfileSettings.tsx
 #: src/components/admin/UserEdit.tsx
+#: src/components/settings/ProfileSettings.tsx
+#: src/pages/admin/AdminUsersPage.tsx
+#: src/pages/auth/PasswordRecoveryPage.tsx
+#: src/pages/auth/PasswordRecoveryPage.tsx
 msgid "E-mail"
 msgstr "E-mail"
 
@@ -307,8 +319,8 @@ msgstr "Adresse e-mail"
 msgid "Edit user"
 msgstr "Modifier un utilisateur"
 
-#: src/pages/admin/AdminUsersPage.tsx
 #: src/components/admin/UserEdit.tsx
+#: src/pages/admin/AdminUsersPage.tsx
 msgid "Enabled"
 msgstr "Actif"
 
@@ -344,8 +356,8 @@ msgstr "Vue étendue"
 msgid "Export your subscriptions and categories as an OPML file that can be imported in other feed reading services"
 msgstr "Exporter vos abonnements et catégories en tant que fichier OPML qui peut être importé dans d'autres services de lecture de flux"
 
-#: src/pages/WelcomePage.tsx
 #: src/components/header/Header.tsx
+#: src/pages/WelcomePage.tsx
 msgid "Extension options"
 msgstr "Options de l'extension"
 
@@ -353,9 +365,9 @@ msgstr "Options de l'extension"
 msgid "Feed name"
 msgstr "Nom du flux"
 
+#: src/components/content/add/Subscribe.tsx
+#: src/components/content/add/Subscribe.tsx
 #: src/pages/app/FeedDetailsPage.tsx
-#: src/components/content/add/Subscribe.tsx
-#: src/components/content/add/Subscribe.tsx
 msgid "Feed URL"
 msgstr "URL du flux"
 
@@ -376,6 +388,10 @@ msgid "Filtering expression"
 msgstr "Expression de filtrage"
 
 #: src/components/header/ProfileMenu.tsx
+msgid "Font size"
+msgstr "Taille de police"
+
+#: src/components/header/ProfileMenu.tsx
 msgid "Force fetching feeds is not yet available."
 msgstr "La récupération forcée des flux n'est pas encore disponible."
 
@@ -383,9 +399,9 @@ msgstr "La récupération forcée des flux n'est pas encore disponible."
 msgid "Forgot password?"
 msgstr "Mot de passe oublié ?"
 
-#: src/pages/app/TagDetailsPage.tsx
-#: src/pages/app/FeedDetailsPage.tsx
 #: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
+#: src/pages/app/TagDetailsPage.tsx
 msgid "Generate an API key in your profile first."
 msgstr "Générez d'abord une clé API dans votre profil."
 
@@ -393,9 +409,9 @@ msgstr "Générez d'abord une clé API dans votre profil."
 msgid "Generate new API key"
 msgstr "Générer une nouvelle clé API"
 
-#: src/pages/app/TagDetailsPage.tsx
-#: src/pages/app/FeedDetailsPage.tsx
 #: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
+#: src/pages/app/TagDetailsPage.tsx
 msgid "Generated feed url"
 msgstr "URL du flux généré"
 
@@ -415,6 +431,18 @@ msgstr "Aller à la documentation de l'API."
 #: src/pages/app/AboutPage.tsx
 msgid "Goodies"
 msgstr "Extensions"
+
+#: src/components/settings/DisplaySettings.tsx
+msgid "Grape"
+msgstr "Bordeaux"
+
+#: src/components/settings/DisplaySettings.tsx
+msgid "Gray"
+msgstr "Gris"
+
+#: src/components/settings/DisplaySettings.tsx
+msgid "Green"
+msgstr "Vert"
 
 #: src/pages/admin/AdminUsersPage.tsx
 msgid "Id"
@@ -440,13 +468,17 @@ msgstr "Importer"
 msgid "In expanded view, scrolling through entries mark them as read"
 msgstr "En mode de lecture étendu, marquer les éléments comme lus lorsque la fenêtre descend."
 
-#: src/components/content/FeedEntryFooter.tsx
+#: src/components/settings/DisplaySettings.tsx
+msgid "Indigo"
+msgstr "Indigo"
+
 #: src/components/content/FeedEntryContextMenu.tsx
+#: src/components/content/FeedEntryFooter.tsx
 msgid "Keep unread"
 msgstr "Garder non lu"
 
-#: src/pages/app/AboutPage.tsx
 #: src/components/content/FeedEntries.tsx
+#: src/pages/app/AboutPage.tsx
 msgid "Keyboard shortcuts"
 msgstr "Raccourcis clavier"
 
@@ -470,11 +502,19 @@ msgstr "Dernier message de mise à jour"
 msgid "Light"
 msgstr "Clair"
 
-#: src/pages/app/TagDetailsPage.tsx
-#: src/pages/app/FeedDetailsPage.tsx
+#: src/components/settings/DisplaySettings.tsx
+msgid "Lime"
+msgstr "Jaune-vert"
+
 #: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
+#: src/pages/app/TagDetailsPage.tsx
 msgid "Link"
 msgstr "Lien"
+
+#: src/components/settings/CustomCodeSettings.tsx
+msgid "Link to the documentation"
+msgstr "Lien vers la documentation"
 
 #: src/hooks/useAppLoading.ts
 msgid "Loading profile..."
@@ -492,9 +532,9 @@ msgstr "Chargement des abonnements..."
 msgid "Loading tags..."
 msgstr "Chargement des marqueurs..."
 
+#: src/pages/auth/LoginPage.tsx
+#: src/pages/auth/LoginPage.tsx
 #: src/pages/WelcomePage.tsx
-#: src/pages/auth/LoginPage.tsx
-#: src/pages/auth/LoginPage.tsx
 msgid "Log in"
 msgstr "Connexion"
 
@@ -506,27 +546,27 @@ msgstr "Déconnexion"
 msgid "Long press"
 msgstr "Appui long"
 
-#: src/pages/admin/AdminUsersPage.tsx
 #: src/components/header/ProfileMenu.tsx
+#: src/pages/admin/AdminUsersPage.tsx
 msgid "Manage users"
 msgstr "Gestion des utilisateurs"
 
-#: src/components/header/MarkAllAsReadButton.tsx
+#: src/components/header/Header.tsx
 msgid "Mark all as read"
 msgstr "Tout marquer comme lu"
 
 #: src/components/KeyboardShortcutsHelp.tsx
-#: src/components/header/MarkAllAsReadButton.tsx
+#: src/components/MarkAllAsReadConfirmationDialog.tsx
 msgid "Mark all entries as read"
 msgstr "Marquer toutes les entrées comme lues"
 
-#: src/components/content/FeedEntryFooter.tsx
 #: src/components/content/FeedEntryContextMenu.tsx
+#: src/components/content/FeedEntryFooter.tsx
 msgid "Mark as read"
 msgstr "Marquer comme lu"
 
-#: src/components/content/FeedEntryFooter.tsx
 #: src/components/content/FeedEntryContextMenu.tsx
+#: src/components/content/FeedEntryFooter.tsx
 msgid "Mark as read up to here"
 msgstr "Marquer comme lu jusqu'ici"
 
@@ -546,21 +586,25 @@ msgstr "Faites défiler la page vers le bas"
 msgid "Move the page up"
 msgstr "Faites défiler la page vers le haut"
 
-#: src/pages/app/FeedDetailsPage.tsx
 #: src/components/RelativeDate.tsx
+#: src/pages/app/FeedDetailsPage.tsx
 msgid "N/A"
 msgstr "N/A"
 
-#: src/pages/app/FeedDetailsPage.tsx
-#: src/pages/app/CategoryDetailsPage.tsx
-#: src/pages/admin/AdminUsersPage.tsx
 #: src/components/admin/UserEdit.tsx
+#: src/pages/admin/AdminUsersPage.tsx
+#: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
 msgid "Name"
 msgstr "Nom"
 
 #: src/components/KeyboardShortcutsHelp.tsx
 msgid "Navigate to a subscription by entering its name"
 msgstr "Naviguer vers un abonnement en entrant son nom"
+
+#: src/components/settings/DisplaySettings.tsx
+msgid "Navigate to the next category/feed with unread entries when marking all entries as read"
+msgstr "Aller vers la catégorie/le flux comportant des entrées non lues suivant après avoir marqué toutes les entrées lues"
 
 #: src/components/settings/DisplaySettings.tsx
 #: src/components/settings/DisplaySettings.tsx
@@ -575,8 +619,8 @@ msgstr "Nouveau mot de passe"
 msgid "Newest first"
 msgstr "Plus récent en premier"
 
-#: src/components/header/Header.tsx
 #: src/components/content/add/Subscribe.tsx
+#: src/components/header/Header.tsx
 msgid "Next"
 msgstr "Suivant"
 
@@ -682,6 +726,10 @@ msgstr "Fichier OPML"
 msgid "OPML file is required"
 msgstr "Vous devez fournir un fichier OPML"
 
+#: src/components/settings/DisplaySettings.tsx
+msgid "Orange"
+msgstr "Orange"
+
 #: src/pages/app/AboutPage.tsx
 msgid "Order"
 msgstr "Ordre"
@@ -694,11 +742,11 @@ msgstr "Parent"
 msgid "Parent Category"
 msgstr "Catégorie parente"
 
-#: src/pages/auth/RegistrationPage.tsx
-#: src/pages/auth/RegistrationPage.tsx
-#: src/pages/auth/LoginPage.tsx
-#: src/pages/auth/LoginPage.tsx
 #: src/components/admin/UserEdit.tsx
+#: src/pages/auth/LoginPage.tsx
+#: src/pages/auth/LoginPage.tsx
+#: src/pages/auth/RegistrationPage.tsx
+#: src/pages/auth/RegistrationPage.tsx
 msgid "Password"
 msgstr "Mot de passe"
 
@@ -710,14 +758,22 @@ msgstr "Récupération de mot de passe"
 msgid "Passwords do not match"
 msgstr "Les mots de passe ne correspondent pas"
 
-#: src/pages/app/FeedDetailsPage.tsx
+#: src/components/settings/DisplaySettings.tsx
+msgid "Pink"
+msgstr "Rose"
+
 #: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
 msgid "Position"
 msgstr "Position"
 
 #: src/components/header/Header.tsx
 msgid "Previous"
 msgstr "Précédent"
+
+#: src/components/settings/DisplaySettings.tsx
+msgid "Primary color"
+msgstr "Couleur d'ambiance"
 
 #: src/pages/app/SettingsPage.tsx
 msgid "Profile"
@@ -727,8 +783,12 @@ msgstr "Profil"
 msgid "Recover password"
 msgstr "Récupérer le mot de passe"
 
-#: src/components/KeyboardShortcutsHelp.tsx
+#: src/components/settings/DisplaySettings.tsx
+msgid "Red"
+msgstr "Rouge"
+
 #: src/components/header/Header.tsx
+#: src/components/KeyboardShortcutsHelp.tsx
 msgid "Refresh"
 msgstr "Rafraîchir"
 
@@ -745,11 +805,11 @@ msgstr "API REST"
 msgid "Right click"
 msgstr "Clic droit"
 
-#: src/pages/app/FeedDetailsPage.tsx
-#: src/pages/app/CategoryDetailsPage.tsx
-#: src/components/settings/ProfileSettings.tsx
-#: src/components/settings/CustomCodeSettings.tsx
 #: src/components/admin/UserEdit.tsx
+#: src/components/settings/CustomCodeSettings.tsx
+#: src/components/settings/ProfileSettings.tsx
+#: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
 msgid "Save"
 msgstr "Enregistrer"
 
@@ -765,24 +825,20 @@ msgstr "Défilement animé lors de la navigation entre les entrées"
 msgid "Scrolling"
 msgstr "Défilement"
 
-#: src/components/sidebar/TreeSearch.tsx
-#: src/components/sidebar/TreeSearch.tsx
 #: src/components/header/Header.tsx
 #: src/components/header/Header.tsx
+#: src/components/sidebar/TreeSearch.tsx
+#: src/components/sidebar/TreeSearch.tsx
 msgid "Search"
 msgstr "Rechercher"
 
-#: src/components/header/Header.tsx
-msgid "Search requires at least 3 characters"
-msgstr "La recherche requiert au moins 3 caractères"
-
 #: src/components/KeyboardShortcutsHelp.tsx
 msgid "Select next unread feed/category"
-msgstr ""
+msgstr "Sélectionner l'article non lu suivant/la catégorie non lue suivante"
 
 #: src/components/KeyboardShortcutsHelp.tsx
 msgid "Select previous unread feed/category"
-msgstr ""
+msgstr "Sélectionner l'article non lu précédent/la catégorie non lue précédente"
 
 #: src/components/KeyboardShortcutsHelp.tsx
 msgid "Set focus on next entry without opening it"
@@ -858,9 +914,9 @@ msgstr "Afficher le nombre d'entrées non lues dans la favicône de l'onglet"
 msgid "Show unread count in tab title"
 msgstr "Afficher le nombre d'entrées non lues dans le titre de l'onglet"
 
+#: src/pages/auth/RegistrationPage.tsx
+#: src/pages/auth/RegistrationPage.tsx
 #: src/pages/WelcomePage.tsx
-#: src/pages/auth/RegistrationPage.tsx
-#: src/pages/auth/RegistrationPage.tsx
 msgid "Sign up"
 msgstr "Créer un compte"
 
@@ -873,20 +929,21 @@ msgstr "Quelque chose s'est mal passé..."
 msgid "Space"
 msgstr "Espace"
 
-#: src/components/content/FeedEntryFooter.tsx
 #: src/components/content/FeedEntryContextMenu.tsx
+#: src/components/content/FeedEntryFooter.tsx
 #: src/components/content/header/Star.tsx
 msgid "Star"
 msgstr "Ajouter aux favoris"
 
-#: src/pages/app/CategoryDetailsPage.tsx
 #: src/components/sidebar/Tree.tsx
+#: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedEntriesPage.tsx
 msgid "Starred"
 msgstr "Favoris"
 
+#: src/components/content/add/Subscribe.tsx
+#: src/components/content/add/Subscribe.tsx
 #: src/pages/app/AddPage.tsx
-#: src/components/content/add/Subscribe.tsx
-#: src/components/content/add/Subscribe.tsx
 msgid "Subscribe"
 msgstr "S'abonner"
 
@@ -922,6 +979,10 @@ msgstr "Système"
 #: src/components/content/FeedEntryFooter.tsx
 msgid "Tags"
 msgstr "Marqueurs"
+
+#: src/components/settings/DisplaySettings.tsx
+msgid "Teal"
+msgstr "Bleu-vert"
 
 #: src/components/content/add/Subscribe.tsx
 msgid "The URL for the feed you want to subscribe to. You can also use the website's url directly and CommaFeed will try to find the feed in the page."
@@ -959,8 +1020,8 @@ msgstr "Essayez la version de démonstration !"
 msgid "Unread"
 msgstr "Non lu"
 
-#: src/components/content/FeedEntryFooter.tsx
 #: src/components/content/FeedEntryContextMenu.tsx
+#: src/components/content/FeedEntryFooter.tsx
 #: src/components/content/header/Star.tsx
 msgid "Unstar"
 msgstr "Retirer des favoris"
@@ -979,6 +1040,10 @@ msgstr "Nom"
 msgid "User Name or E-mail"
 msgstr "Nom d'utilisateur ou e-mail"
 
+#: src/components/settings/DisplaySettings.tsx
+msgid "Violet"
+msgstr "Violet"
+
 #: src/components/Alert.tsx
 msgid "Warning"
 msgstr "Attention"
@@ -986,6 +1051,10 @@ msgstr "Attention"
 #: src/pages/app/FeedDetailsPage.tsx
 msgid "Website"
 msgstr "Site web"
+
+#: src/components/settings/DisplaySettings.tsx
+msgid "Yellow"
+msgstr "Jaune"
 
 #: src/pages/app/FeedEntriesPage.tsx
 msgid "You don't have any subscriptions yet. Why not try adding one by clicking on the + sign at the top of the page?"

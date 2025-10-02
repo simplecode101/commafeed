@@ -1,5 +1,36 @@
 # Changelog
 
+## [5.11.1]
+
+- The search limit of 3 characters has been removed (#1887)
+- Fix an issue that caused feed filtering expressions to be incorrectly converted to lowercase when saving them (#1899)
+
+## [5.11.0]
+
+- Add an option to navigate to the next unread category/feed when marking all entries as read (#1807)
+- Google Analytics support has been removed
+
+## [5.10.0]
+
+- Add an indicator next to each feed's unread count in the tree to show when new entries are discovered while the app is open (#1762)
+- Feeds with uppercase HTTP:// or HTTPS:// URLs are now correctly handled again
+- The aarch64 native executable now also works on the Raspberry Pi 5 (#1795)
+- Improve general performance of the UI by reducing the number of re-renders, especially when a lot of entries are displayed (#1087)
+
+## [5.9.0]
+
+- A lot of CSS classes have been added to the elements of the application to ease custom CSS rules (#1757)
+- Added a link in the README to the [documentation](https://athou.github.io/commafeed/documentation/custom-css/) of the new CSS classes
+- Static resources are now cached for much longer (#1782)
+
+## [5.8.0]
+
+- A color picker is now available on the settings page to change the orange accent of the application (#1598)
+- A font size slider is now available to change the size of the text of feed entries (#1462)
+- The "mark all as read" confirmation setting now also applies to the "shift+a" keyboard shortcut (#1744)
+- CommaFeed wil try to match the language of the browser before defaulting to english (#1767)
+- The default value for the number of entries to keep above the selected entry when scrolling is now 1 instead of 0 to match what other feed readers do
+
 ## [5.7.0]
 
 - Add Shift+J/Shift+K keyboard shortcuts to navigate to the next/previous feed or category with unread entries (#1558)

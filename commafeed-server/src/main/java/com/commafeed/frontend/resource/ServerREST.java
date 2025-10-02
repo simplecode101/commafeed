@@ -13,20 +13,18 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+
 import com.commafeed.CommaFeedConfiguration;
 import com.commafeed.CommaFeedVersion;
 import com.commafeed.backend.HttpGetter;
 import com.commafeed.backend.HttpGetter.HttpResult;
-import com.commafeed.backend.feed.FeedUtils;
+import com.commafeed.backend.feed.ImageProxyUrl;
 import com.commafeed.frontend.model.ServerInfo;
 import com.commafeed.security.Roles;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @Path("/rest/server")
@@ -46,24 +44,20 @@ public class ServerREST {
 	@GET
 	@PermitAll
 	@Transactional
-	@Operation(
-			summary = "Get server infos",
-			description = "Get server infos",
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = ServerInfo.class))) })
-	public Response getServerInfos() {
+	@Operation(summary = "Get server infos", description = "Get server infos")
+	public ServerInfo getServerInfos() {
 		ServerInfo infos = new ServerInfo();
 		infos.setAnnouncement(config.announcement().orElse(null));
 		infos.setVersion(version.getVersion());
 		infos.setGitCommit(version.getGitCommit());
 		infos.setAllowRegistrations(config.users().allowRegistrations());
-		infos.setGoogleAnalyticsCode(config.googleAnalyticsTrackingCode().orElse(null));
 		infos.setSmtpEnabled(config.passwordRecoveryEnabled());
 		infos.setDemoAccountEnabled(config.users().createDemoAccount());
 		infos.setWebsocketEnabled(config.websocket().enabled());
 		infos.setWebsocketPingInterval(config.websocket().pingInterval().toMillis());
 		infos.setTreeReloadInterval(config.websocket().treeReloadInterval().toMillis());
 		infos.setForceRefreshCooldownDuration(config.feedRefresh().forceRefreshCooldownDuration().toMillis());
-		return Response.ok(infos).build();
+		return infos;
 	}
 
 	@Path("/proxy")
@@ -77,10 +71,10 @@ public class ServerREST {
 			return Response.status(Status.FORBIDDEN).build();
 		}
 
-		url = FeedUtils.imageProxyDecoder(url);
+		url = ImageProxyUrl.decode(url);
 		try {
 			HttpResult result = httpGetter.get(url);
-			return Response.ok(result.getContent()).build();
+			return Response.ok(result.content()).build();
 		} catch (Exception e) {
 			return Response.status(Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
 		}

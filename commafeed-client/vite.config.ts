@@ -1,7 +1,7 @@
 import { lingui } from "@lingui/vite-plugin"
 import react from "@vitejs/plugin-react"
 import { visualizer } from "rollup-plugin-visualizer"
-import { type PluginOption, defineConfig } from "vite"
+import { defineConfig } from "vite"
 import checker from "vite-plugin-checker"
 import tsconfigPaths from "vite-tsconfig-paths"
 
@@ -10,7 +10,13 @@ export default defineConfig(() => ({
     plugins: [
         react({
             babel: {
-                plugins: ["@lingui/babel-plugin-lingui-macro"],
+                plugins: [
+                    // support for lingui macros
+                    // needs to be before the react compiler plugin
+                    "@lingui/babel-plugin-lingui-macro",
+                    // react compiler
+                    ["babel-plugin-react-compiler", { target: "19" }],
+                ],
             },
         }),
         lingui(),
@@ -20,6 +26,7 @@ export default defineConfig(() => ({
             typescript: true,
             biome: {
                 command: "check",
+                flags: "--error-on-warnings",
             },
         }),
     ],
@@ -30,7 +37,8 @@ export default defineConfig(() => ({
             "/rest": "http://localhost:8083",
             "/next": "http://localhost:8083",
             "/ws": "ws://localhost:8083",
-            "/openapi.json": "http://localhost:8083",
+            "/openapi": "http://localhost:8083",
+            "/api-documentation": "http://localhost:8083",
             "/custom_css.css": "http://localhost:8083",
             "/custom_js.js": "http://localhost:8083",
             "/j_security_check": "http://localhost:8083",

@@ -1,20 +1,20 @@
 import { msg } from "@lingui/core/macro"
 import { useLingui } from "@lingui/react"
 import { Group, Indicator, Popover, TagsInput } from "@mantine/core"
-import { markEntriesUpToEntry, markEntry, starEntry, tagEntry } from "app/entries/thunks"
-import { useAppDispatch, useAppSelector } from "app/store"
-import type { Entry } from "app/types"
-import { ActionButton } from "components/ActionButton"
-import { useActionButton } from "hooks/useActionButton"
-import { useMobile } from "hooks/useMobile"
 import { TbArrowBarToDown, TbExternalLink, TbMail, TbMailOpened, TbShare, TbStar, TbStarOff, TbTag } from "react-icons/tb"
+import { markEntriesUpToEntry, markEntry, starEntry, tagEntry } from "@/app/entries/thunks"
+import { useAppDispatch, useAppSelector } from "@/app/store"
+import type { Entry } from "@/app/types"
+import { ActionButton } from "@/components/ActionButton"
+import { useActionButton } from "@/hooks/useActionButton"
+import { useMobile } from "@/hooks/useMobile"
 import { ShareButtons } from "./ShareButtons"
 
 interface FeedEntryFooterProps {
     entry: Entry
 }
 
-export function FeedEntryFooter(props: FeedEntryFooterProps) {
+export function FeedEntryFooter(props: Readonly<FeedEntryFooterProps>) {
     const tags = useAppSelector(state => state.user.tags)
     const mobile = useMobile()
     const { spacing } = useActionButton()
@@ -37,7 +37,7 @@ export function FeedEntryFooter(props: FeedEntryFooterProps) {
         )
 
     return (
-        <Group justify="space-between">
+        <Group justify="space-between" className="cf-footer">
             <Group gap={spacing}>
                 {props.entry.markable && (
                     <ActionButton

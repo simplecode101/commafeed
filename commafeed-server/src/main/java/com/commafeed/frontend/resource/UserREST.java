@@ -1,5 +1,7 @@
 package com.commafeed.frontend.resource;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -26,14 +28,17 @@ import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.core5.net.URIBuilder;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-import com.commafeed.CommaFeedApplication;
 import com.commafeed.CommaFeedConfiguration;
+import com.commafeed.CommaFeedConstants;
 import com.commafeed.backend.Digests;
+import com.commafeed.backend.Urls;
 import com.commafeed.backend.dao.UserDAO;
 import com.commafeed.backend.dao.UserRoleDAO;
 import com.commafeed.backend.dao.UserSettingsDAO;
-import com.commafeed.backend.feed.FeedUtils;
 import com.commafeed.backend.model.User;
 import com.commafeed.backend.model.UserRole;
 import com.commafeed.backend.model.UserRole.Role;
@@ -54,12 +59,6 @@ import com.commafeed.security.AuthenticationContext;
 import com.commafeed.security.Roles;
 import com.google.common.base.Preconditions;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -86,18 +85,15 @@ public class UserREST {
 	@Path("/settings")
 	@GET
 	@Transactional
-	@Operation(
-			summary = "Retrieve user settings",
-			description = "Retrieve user settings",
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Settings.class))) })
-	public Response getUserSettings() {
+	@Operation(summary = "Retrieve user settings", description = "Retrieve user settings")
+	public Settings getUserSettings() {
 		Settings s = new Settings();
 
 		User user = authenticationContext.getCurrentUser();
 		UserSettings settings = userSettingsDAO.findByUser(user);
 		if (settings != null) {
-			s.setReadingMode(settings.getReadingMode().name());
-			s.setReadingOrder(settings.getReadingOrder().name());
+			s.setReadingMode(settings.getReadingMode());
+			s.setReadingOrder(settings.getReadingOrder());
 			s.setShowRead(settings.isShowRead());
 
 			s.getSharingSettings().setEmail(settings.isEmail());
@@ -114,18 +110,20 @@ public class UserREST {
 			s.setCustomJs(settings.getCustomJs());
 			s.setLanguage(settings.getLanguage());
 			s.setScrollSpeed(settings.getScrollSpeed());
-			s.setScrollMode(settings.getScrollMode().name());
+			s.setScrollMode(settings.getScrollMode());
 			s.setEntriesToKeepOnTopWhenScrolling(settings.getEntriesToKeepOnTopWhenScrolling());
-			s.setStarIconDisplayMode(settings.getStarIconDisplayMode().name());
-			s.setExternalLinkIconDisplayMode(settings.getExternalLinkIconDisplayMode().name());
+			s.setStarIconDisplayMode(settings.getStarIconDisplayMode());
+			s.setExternalLinkIconDisplayMode(settings.getExternalLinkIconDisplayMode());
 			s.setMarkAllAsReadConfirmation(settings.isMarkAllAsReadConfirmation());
+			s.setMarkAllAsReadNavigateToNextUnread(settings.isMarkAllAsReadNavigateToNextUnread());
 			s.setCustomContextMenu(settings.isCustomContextMenu());
 			s.setMobileFooter(settings.isMobileFooter());
 			s.setUnreadCountTitle(settings.isUnreadCountTitle());
 			s.setUnreadCountFavicon(settings.isUnreadCountFavicon());
+			s.setPrimaryColor(settings.getPrimaryColor());
 		} else {
-			s.setReadingMode(ReadingMode.unread.name());
-			s.setReadingOrder(ReadingOrder.desc.name());
+			s.setReadingMode(ReadingMode.UNREAD);
+			s.setReadingOrder(ReadingOrder.DESC);
 			s.setShowRead(true);
 
 			s.getSharingSettings().setEmail(true);
@@ -140,17 +138,18 @@ public class UserREST {
 			s.setScrollMarks(true);
 			s.setLanguage("en");
 			s.setScrollSpeed(400);
-			s.setScrollMode(ScrollMode.if_needed.name());
-			s.setEntriesToKeepOnTopWhenScrolling(0);
-			s.setStarIconDisplayMode(IconDisplayMode.on_desktop.name());
-			s.setExternalLinkIconDisplayMode(IconDisplayMode.on_desktop.name());
+			s.setScrollMode(ScrollMode.IF_NEEDED);
+			s.setEntriesToKeepOnTopWhenScrolling(1);
+			s.setStarIconDisplayMode(IconDisplayMode.ON_DESKTOP);
+			s.setExternalLinkIconDisplayMode(IconDisplayMode.ON_DESKTOP);
 			s.setMarkAllAsReadConfirmation(true);
+			s.setMarkAllAsReadNavigateToNextUnread(false);
 			s.setCustomContextMenu(true);
 			s.setMobileFooter(false);
 			s.setUnreadCountTitle(false);
 			s.setUnreadCountFavicon(true);
 		}
-		return Response.ok(s).build();
+		return s;
 	}
 
 	@Path("/settings")
@@ -166,23 +165,25 @@ public class UserREST {
 			s = new UserSettings();
 			s.setUser(user);
 		}
-		s.setReadingMode(ReadingMode.valueOf(settings.getReadingMode()));
-		s.setReadingOrder(ReadingOrder.valueOf(settings.getReadingOrder()));
+		s.setReadingMode(settings.getReadingMode());
+		s.setReadingOrder(settings.getReadingOrder());
 		s.setShowRead(settings.isShowRead());
 		s.setScrollMarks(settings.isScrollMarks());
 		s.setCustomCss(settings.getCustomCss());
-		s.setCustomJs(CommaFeedApplication.USERNAME_DEMO.equals(user.getName()) ? "" : settings.getCustomJs());
+		s.setCustomJs(CommaFeedConstants.USERNAME_DEMO.equals(user.getName()) ? "" : settings.getCustomJs());
 		s.setLanguage(settings.getLanguage());
 		s.setScrollSpeed(settings.getScrollSpeed());
-		s.setScrollMode(ScrollMode.valueOf(settings.getScrollMode()));
+		s.setScrollMode(settings.getScrollMode());
 		s.setEntriesToKeepOnTopWhenScrolling(settings.getEntriesToKeepOnTopWhenScrolling());
-		s.setStarIconDisplayMode(IconDisplayMode.valueOf(settings.getStarIconDisplayMode()));
-		s.setExternalLinkIconDisplayMode(IconDisplayMode.valueOf(settings.getExternalLinkIconDisplayMode()));
+		s.setStarIconDisplayMode(settings.getStarIconDisplayMode());
+		s.setExternalLinkIconDisplayMode(settings.getExternalLinkIconDisplayMode());
 		s.setMarkAllAsReadConfirmation(settings.isMarkAllAsReadConfirmation());
+		s.setMarkAllAsReadNavigateToNextUnread(settings.isMarkAllAsReadNavigateToNextUnread());
 		s.setCustomContextMenu(settings.isCustomContextMenu());
 		s.setMobileFooter(settings.isMobileFooter());
 		s.setUnreadCountTitle(settings.isUnreadCountTitle());
 		s.setUnreadCountFavicon(settings.isUnreadCountFavicon());
+		s.setPrimaryColor(settings.getPrimaryColor());
 
 		s.setEmail(settings.getSharingSettings().isEmail());
 		s.setGmail(settings.getSharingSettings().isGmail());
@@ -193,7 +194,7 @@ public class UserREST {
 		s.setInstapaper(settings.getSharingSettings().isInstapaper());
 		s.setBuffer(settings.getSharingSettings().isBuffer());
 
-		userSettingsDAO.saveOrUpdate(s);
+		userSettingsDAO.merge(s);
 		return Response.ok().build();
 
 	}
@@ -201,10 +202,8 @@ public class UserREST {
 	@Path("/profile")
 	@GET
 	@Transactional
-	@Operation(
-			summary = "Retrieve user's profile",
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = UserModel.class))) })
-	public Response getUserProfile() {
+	@Operation(summary = "Retrieve user's profile")
+	public UserModel getUserProfile() {
 		User user = authenticationContext.getCurrentUser();
 
 		UserModel userModel = new UserModel();
@@ -219,7 +218,7 @@ public class UserREST {
 				userModel.setAdmin(true);
 			}
 		}
-		return Response.ok(userModel).build();
+		return userModel;
 	}
 
 	@Path("/profile")
@@ -228,7 +227,7 @@ public class UserREST {
 	@Operation(summary = "Save user's profile")
 	public Response saveUserProfile(@Valid @Parameter(required = true) ProfileModificationRequest request) {
 		User user = authenticationContext.getCurrentUser();
-		if (CommaFeedApplication.USERNAME_DEMO.equals(user.getName())) {
+		if (CommaFeedConstants.USERNAME_DEMO.equals(user.getName())) {
 			return Response.status(Status.FORBIDDEN).build();
 		}
 
@@ -256,7 +255,7 @@ public class UserREST {
 			user.setApiKey(userService.generateApiKey(user));
 		}
 
-		userDAO.saveOrUpdate(user);
+		userDAO.merge(user);
 		return Response.ok().build();
 	}
 
@@ -292,7 +291,7 @@ public class UserREST {
 		try {
 			user.setRecoverPasswordToken(Digests.sha1Hex(UUID.randomUUID().toString()));
 			user.setRecoverPasswordTokenDate(Instant.now());
-			userDAO.saveOrUpdate(user);
+
 			mailService.sendMail(user, "Password recovery", buildEmailContent(user));
 			return Response.ok().build();
 		} catch (Exception e) {
@@ -301,15 +300,15 @@ public class UserREST {
 		}
 	}
 
-	private String buildEmailContent(User user) throws Exception {
-		String publicUrl = FeedUtils.removeTrailingSlash(uri.getBaseUri().toString());
+	private String buildEmailContent(User user) throws URISyntaxException, MalformedURLException {
+		String publicUrl = Urls.removeTrailingSlash(uri.getBaseUri().toString());
 		publicUrl += "/rest/user/passwordResetCallback";
 		return String.format(
 				"You asked for password recovery for account '%s', <a href='%s'>follow this link</a> to change your password. Ignore this if you didn't request a password recovery.",
 				user.getName(), callbackUrl(user, publicUrl));
 	}
 
-	private String callbackUrl(User user, String publicUrl) throws Exception {
+	private String callbackUrl(User user, String publicUrl) throws URISyntaxException, MalformedURLException {
 		return new URIBuilder(publicUrl).addParameter("email", user.getEmail())
 				.addParameter("token", user.getRecoverPasswordToken())
 				.build()
@@ -346,7 +345,6 @@ public class UserREST {
 		}
 		user.setRecoverPasswordToken(null);
 		user.setRecoverPasswordTokenDate(null);
-		userDAO.saveOrUpdate(user);
 
 		String message = "Your new password is: " + passwd;
 		message += "<br />";
@@ -360,7 +358,7 @@ public class UserREST {
 	@Operation(summary = "Delete the user account")
 	public Response deleteUser() {
 		User user = authenticationContext.getCurrentUser();
-		if (CommaFeedApplication.USERNAME_ADMIN.equals(user.getName()) || CommaFeedApplication.USERNAME_DEMO.equals(user.getName())) {
+		if (CommaFeedConstants.USERNAME_ADMIN.equals(user.getName()) || CommaFeedConstants.USERNAME_DEMO.equals(user.getName())) {
 			return Response.status(Status.FORBIDDEN).build();
 		}
 		userService.unregister(userDAO.findById(user.getId()));

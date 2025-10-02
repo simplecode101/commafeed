@@ -215,7 +215,6 @@ export interface ServerInfo {
     version: string
     gitCommit: string
     allowRegistrations: boolean
-    googleAnalyticsCode?: string
     smtpEnabled: boolean
     demoAccountEnabled: boolean
     websocketEnabled: boolean
@@ -249,10 +248,12 @@ export interface Settings {
     starIconDisplayMode: IconDisplayMode
     externalLinkIconDisplayMode: IconDisplayMode
     markAllAsReadConfirmation: boolean
+    markAllAsReadNavigateToNextUnread: boolean
     customContextMenu: boolean
     mobileFooter: boolean
     unreadCountTitle: boolean
     unreadCountFavicon: boolean
+    primaryColor?: string
     sharingSettings: SharingSettings
 }
 
@@ -260,6 +261,7 @@ export interface LocalSettings {
     viewMode: ViewMode
     sidebarWidth: number
     announcementHash: string
+    fontSizePercentage: number
 }
 
 export interface StarRequest {

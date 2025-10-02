@@ -10,7 +10,7 @@ import org.jsoup.select.Elements;
 
 import com.commafeed.backend.HttpGetter;
 import com.commafeed.backend.HttpGetter.HttpResult;
-import com.commafeed.backend.feed.FeedUtils;
+import com.commafeed.backend.Urls;
 import com.commafeed.backend.model.Feed;
 
 import lombok.RequiredArgsConstructor;
@@ -68,14 +68,13 @@ public class DefaultFaviconFetcher extends AbstractFaviconFetcher {
 		String contentType = null;
 
 		try {
-			url = FeedUtils.removeTrailingSlash(url) + "/favicon.ico";
+			url = Urls.removeTrailingSlash(url) + "/favicon.ico";
 			log.debug("getting root icon at {}", url);
 			HttpResult result = getter.get(url);
-			bytes = result.getContent();
-			contentType = result.getContentType();
+			bytes = result.content();
+			contentType = result.contentType();
 		} catch (Exception e) {
-			log.debug("Failed to retrieve iconAtRoot for url {}: ", url);
-			log.trace("Failed to retrieve iconAtRoot for url {}: ", url, e);
+			log.debug("Failed to retrieve iconAtRoot for url {}: ", url, e);
 		}
 
 		if (!isValidIconResponse(bytes, contentType)) {
@@ -89,10 +88,9 @@ public class DefaultFaviconFetcher extends AbstractFaviconFetcher {
 		Document doc;
 		try {
 			HttpResult result = getter.get(url);
-			doc = Jsoup.parse(new String(result.getContent()), url);
+			doc = Jsoup.parse(new String(result.content()), url);
 		} catch (Exception e) {
-			log.debug("Failed to retrieve page to find icon");
-			log.trace("Failed to retrieve page to find icon", e);
+			log.debug("Failed to retrieve page to find icon", e);
 			return null;
 		}
 
@@ -115,11 +113,10 @@ public class DefaultFaviconFetcher extends AbstractFaviconFetcher {
 		String contentType;
 		try {
 			HttpResult result = getter.get(href);
-			bytes = result.getContent();
-			contentType = result.getContentType();
+			bytes = result.content();
+			contentType = result.contentType();
 		} catch (Exception e) {
-			log.debug("Failed to retrieve icon found in page {}", href);
-			log.trace("Failed to retrieve icon found in page {}", href, e);
+			log.debug("Failed to retrieve icon found in page {}", href, e);
 			return null;
 		}
 

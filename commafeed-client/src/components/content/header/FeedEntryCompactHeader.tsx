@@ -1,11 +1,11 @@
-import { Box, Text } from "@mantine/core"
-import type { Entry } from "app/types"
-import { RelativeDate } from "components/RelativeDate"
-import { FeedFavicon } from "components/content/FeedFavicon"
-import { OpenExternalLink } from "components/content/header/OpenExternalLink"
-import { Star } from "components/content/header/Star"
-import { OnDesktop } from "components/responsive/OnDesktop"
-import { tss } from "tss"
+import { Box } from "@mantine/core"
+import type { Entry } from "@/app/types"
+import { FeedFavicon } from "@/components/content/FeedFavicon"
+import { OpenExternalLink } from "@/components/content/header/OpenExternalLink"
+import { Star } from "@/components/content/header/Star"
+import { RelativeDate } from "@/components/RelativeDate"
+import { OnDesktop } from "@/components/responsive/OnDesktop"
+import { tss } from "@/tss"
 import { FeedEntryTitle } from "./FeedEntryTitle"
 
 export interface FeedEntryHeaderProps {
@@ -43,7 +43,7 @@ const useStyles = tss
         },
     }))
 
-export function FeedEntryCompactHeader(props: FeedEntryHeaderProps) {
+export function FeedEntryCompactHeader(props: Readonly<FeedEntryHeaderProps>) {
     const { classes } = useStyles({
         read: props.entry.read,
     })
@@ -54,17 +54,17 @@ export function FeedEntryCompactHeader(props: FeedEntryHeaderProps) {
                 <FeedFavicon url={props.entry.iconUrl} />
             </Box>
             <OnDesktop>
-                <Text c="dimmed" className={classes.feedName}>
+                <Box c="dimmed" className={classes.feedName}>
                     {props.entry.feedName}
-                </Text>
+                </Box>
             </OnDesktop>
             <Box className={classes.title}>
                 <FeedEntryTitle entry={props.entry} />
             </Box>
             <OnDesktop>
-                <Text c="dimmed" className={classes.date}>
+                <Box c="dimmed" className={classes.date}>
                     <RelativeDate date={props.entry.date} />
-                </Text>
+                </Box>
             </OnDesktop>
             {props.showExternalLinkIcon && <OpenExternalLink entry={props.entry} />}
         </Box>

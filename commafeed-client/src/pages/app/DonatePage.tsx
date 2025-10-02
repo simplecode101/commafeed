@@ -1,8 +1,7 @@
 import { Trans } from "@lingui/react/macro"
 import { Anchor, Box, Code, Container, Group, List, Title } from "@mantine/core"
-import { Constants } from "app/constants"
-import React from "react"
 import { TbBrandGithub, TbBrandPaypal, TbCoinBitcoin, TbHeartFilled } from "react-icons/tb"
+import { Constants } from "@/app/constants"
 
 const iconSize = 24
 
@@ -26,6 +25,11 @@ export function DonatePage() {
                 </Trans>
 
                 <List mt="lg">
+                    <List.Item icon={<TbBrandGithub size={iconSize} />}>
+                        <Anchor href="https://github.com/sponsors/Athou" target="_blank" rel="noreferrer">
+                            GitHub Sponsors
+                        </Anchor>
+                    </List.Item>
                     <List.Item icon={<TbBrandPaypal size={iconSize} />}>
                         <Anchor
                             href="https://www.paypal.com/donate/?business=9CNQHMJG2ZJVY&no_recurring=0&item_name=CommaFeed&currency_code=EUR"
@@ -42,11 +46,6 @@ export function DonatePage() {
                             rel="noreferrer"
                         >
                             Paypal USD
-                        </Anchor>
-                    </List.Item>
-                    <List.Item icon={<TbBrandGithub size={iconSize} />}>
-                        <Anchor href="https://github.com/sponsors/Athou" target="_blank" rel="noreferrer">
-                            GitHub Sponsors
                         </Anchor>
                     </List.Item>
                     <List.Item icon={<TbCoinBitcoin size={iconSize} />}>

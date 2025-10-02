@@ -2,19 +2,19 @@ import { Trans } from "@lingui/react/macro"
 import { Anchor, Box, Button, Code, Container, Divider, Group, Input, NumberInput, Stack, Text, TextInput, Title } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { openConfirmModal } from "@mantine/modals"
-import { client, errorToStrings } from "app/client"
-import { redirectToRootCategory, redirectToSelectedSource } from "app/redirect/thunks"
-import { useAppDispatch, useAppSelector } from "app/store"
-import { reloadTree } from "app/tree/thunks"
-import type { FeedModificationRequest } from "app/types"
-import { Alert } from "components/Alert"
-import { Loader } from "components/Loader"
-import { RelativeDate } from "components/RelativeDate"
-import { CategorySelect } from "components/content/add/CategorySelect"
 import { useEffect } from "react"
 import { useAsync, useAsyncCallback } from "react-async-hook"
 import { TbDeviceFloppy, TbTrash } from "react-icons/tb"
 import { useParams } from "react-router-dom"
+import { client, errorToStrings } from "@/app/client"
+import { redirectToRootCategory, redirectToSelectedSource } from "@/app/redirect/thunks"
+import { useAppDispatch, useAppSelector } from "@/app/store"
+import { reloadTree } from "@/app/tree/thunks"
+import type { FeedModificationRequest } from "@/app/types"
+import { Alert } from "@/components/Alert"
+import { CategorySelect } from "@/components/content/add/CategorySelect"
+import { Loader } from "@/components/Loader"
+import { RelativeDate } from "@/components/RelativeDate"
 
 function FilteringExpressionDescription() {
     const example = <Code>url.contains('youtube') or (author eq 'athou' and title.contains('github'))</Code>
@@ -41,7 +41,7 @@ function FilteringExpressionDescription() {
                     <a href="https://commons.apache.org/proper/commons-jexl/reference/syntax.html" target="_blank" rel="noreferrer">
                         here
                     </a>
-                    .
+                    <span>.</span>
                 </Trans>
             </div>
         </div>
@@ -50,7 +50,7 @@ function FilteringExpressionDescription() {
 
 export function FeedDetailsPage() {
     const { id } = useParams()
-    if (!id) throw Error("id required")
+    if (!id) throw new Error("id required")
 
     const apiKey = useAppSelector(state => state.user.profile?.apiKey)
     const dispatch = useAppDispatch()
@@ -86,7 +86,9 @@ export function FeedDetailsPage() {
             ),
             labels: { confirm: <Trans>Confirm</Trans>, cancel: <Trans>Cancel</Trans> },
             confirmProps: { color: "red" },
-            onConfirm: async () => await unsubscribe.execute({ id: +id }),
+            onConfirm: () => {
+                unsubscribe.execute({ id: +id })
+            },
         })
     }
 

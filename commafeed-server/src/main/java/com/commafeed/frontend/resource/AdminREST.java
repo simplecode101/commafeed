@@ -1,6 +1,8 @@
 package com.commafeed.frontend.resource;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,9 +20,12 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import com.codahale.metrics.MetricRegistry;
-import com.commafeed.CommaFeedApplication;
+import com.commafeed.CommaFeedConstants;
 import com.commafeed.backend.dao.UserDAO;
 import com.commafeed.backend.dao.UserRoleDAO;
 import com.commafeed.backend.model.User;
@@ -37,13 +42,6 @@ import com.commafeed.security.Roles;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @Path("/rest/admin")
@@ -82,7 +80,7 @@ public class AdminREST {
 				roles.add(Role.ADMIN);
 			}
 			try {
-				userService.register(req.getName(), req.getPassword(), req.getEmail(), roles, true);
+				id = userService.register(req.getName(), req.getPassword(), req.getEmail(), roles, true).getId();
 			} catch (Exception e) {
 				return Response.status(Status.CONFLICT).entity(e.getMessage()).build();
 			}
@@ -99,13 +97,12 @@ public class AdminREST {
 			}
 			u.setEmail(req.getEmail());
 			u.setDisabled(!req.isEnabled());
-			userDAO.saveOrUpdate(u);
 
 			Set<Role> roles = userRoleDAO.findRoles(u);
 			if (req.isAdmin() && !roles.contains(Role.ADMIN)) {
-				userRoleDAO.saveOrUpdate(new UserRole(u, Role.ADMIN));
+				userRoleDAO.persist(new UserRole(u, Role.ADMIN));
 			} else if (!req.isAdmin() && roles.contains(Role.ADMIN)) {
-				if (CommaFeedApplication.USERNAME_ADMIN.equals(u.getName())) {
+				if (CommaFeedConstants.USERNAME_ADMIN.equals(u.getName())) {
 					return Response.status(Status.FORBIDDEN).entity("You cannot remove the admin role from the admin user.").build();
 				}
 				for (UserRole userRole : userRoleDAO.findAll(u)) {
@@ -116,18 +113,15 @@ public class AdminREST {
 			}
 
 		}
-		return Response.ok().build();
+		return Response.ok(id).build();
 
 	}
 
 	@Path("/user/get/{id}")
 	@GET
 	@Transactional
-	@Operation(
-			summary = "Get user information",
-			description = "Get user information",
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = UserModel.class))) })
-	public Response adminGetUser(@Parameter(description = "user id", required = true) @PathParam("id") Long id) {
+	@Operation(summary = "Get user information", description = "Get user information")
+	public UserModel adminGetUser(@Parameter(description = "user id", required = true) @PathParam("id") Long id) {
 		Preconditions.checkNotNull(id);
 		User u = userDAO.findById(id);
 		UserModel userModel = new UserModel();
@@ -136,37 +130,33 @@ public class AdminREST {
 		userModel.setEmail(u.getEmail());
 		userModel.setEnabled(!u.isDisabled());
 		userModel.setAdmin(userRoleDAO.findAll(u).stream().anyMatch(r -> r.getRole() == Role.ADMIN));
-		return Response.ok(userModel).build();
+		return userModel;
 	}
 
 	@Path("/user/getAll")
 	@GET
 	@Transactional
-	@Operation(
-			summary = "Get all users",
-			description = "Get all users",
-			responses = { @ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserModel.class)))) })
-	public Response adminGetUsers() {
+	@Operation(summary = "Get all users", description = "Get all users")
+	public List<UserModel> adminGetUsers() {
 		Map<Long, UserModel> users = new HashMap<>();
 		for (UserRole role : userRoleDAO.findAll()) {
 			User u = role.getUser();
-			Long key = u.getId();
-			UserModel userModel = users.get(key);
-			if (userModel == null) {
-				userModel = new UserModel();
-				userModel.setId(u.getId());
-				userModel.setName(u.getName());
-				userModel.setEmail(u.getEmail());
-				userModel.setEnabled(!u.isDisabled());
-				userModel.setCreated(u.getCreated());
-				userModel.setLastLogin(u.getLastLogin());
-				users.put(key, userModel);
-			}
+			UserModel userModel = users.computeIfAbsent(u.getId(), k -> {
+				UserModel um = new UserModel();
+				um.setId(u.getId());
+				um.setName(u.getName());
+				um.setEmail(u.getEmail());
+				um.setEnabled(!u.isDisabled());
+				um.setCreated(u.getCreated());
+				um.setLastLogin(u.getLastLogin());
+				return um;
+			});
+
 			if (role.getRole() == Role.ADMIN) {
 				userModel.setAdmin(true);
 			}
 		}
-		return Response.ok(users.values()).build();
+		return new ArrayList<>(users.values());
 	}
 
 	@Path("/user/delete")

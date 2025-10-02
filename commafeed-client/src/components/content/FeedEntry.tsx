@@ -1,13 +1,13 @@
 import { Box, Divider, type MantineRadius, type MantineSpacing, Paper } from "@mantine/core"
-import { Constants } from "app/constants"
-import { useAppSelector } from "app/store"
-import type { Entry, ViewMode } from "app/types"
-import { FeedEntryCompactHeader } from "components/content/header/FeedEntryCompactHeader"
-import { FeedEntryHeader } from "components/content/header/FeedEntryHeader"
-import { useMobile } from "hooks/useMobile"
 import type React from "react"
 import { useSwipeable } from "react-swipeable"
-import { tss } from "tss"
+import { Constants } from "@/app/constants"
+import { useAppSelector } from "@/app/store"
+import type { Entry, ViewMode } from "@/app/types"
+import { FeedEntryCompactHeader } from "@/components/content/header/FeedEntryCompactHeader"
+import { FeedEntryHeader } from "@/components/content/header/FeedEntryHeader"
+import { useMobile } from "@/hooks/useMobile"
+import { tss } from "@/tss"
 import { FeedEntryBody } from "./FeedEntryBody"
 import { FeedEntryContextMenu } from "./FeedEntryContextMenu"
 import { FeedEntryFooter } from "./FeedEntryFooter"
@@ -32,8 +32,9 @@ const useStyles = tss
         rtl: boolean
         showSelectionIndicator: boolean
         maxWidth?: number
+        fontSizePercentage: number
     }>()
-    .create(({ theme, colorScheme, read, expanded, viewMode, rtl, showSelectionIndicator, maxWidth }) => {
+    .create(({ theme, colorScheme, read, expanded, viewMode, rtl, showSelectionIndicator, maxWidth, fontSizePercentage }) => {
         let backgroundColor: string
         if (colorScheme === "dark") {
             backgroundColor = read ? "inherit" : theme.colors.dark[5]
@@ -83,18 +84,21 @@ const useStyles = tss
                 },
             },
             headerLink: {
+                fontSize: `${fontSizePercentage}%`,
                 color: "inherit",
                 textDecoration: "none",
             },
             body: {
+                fontSize: `${fontSizePercentage}%`,
                 direction: rtl ? "rtl" : "ltr",
                 maxWidth: maxWidth ?? "100%",
             },
         }
     })
 
-export function FeedEntry(props: FeedEntryProps) {
+export function FeedEntry(props: Readonly<FeedEntryProps>) {
     const viewMode = useAppSelector(state => state.user.localSettings.viewMode)
+    const fontSizePercentage = useAppSelector(state => state.user.localSettings.fontSizePercentage)
     const { classes, cx } = useStyles({
         read: props.entry.read,
         expanded: props.expanded,
@@ -102,6 +106,7 @@ export function FeedEntry(props: FeedEntryProps) {
         rtl: props.entry.rtl,
         showSelectionIndicator: props.showSelectionIndicator,
         maxWidth: props.maxWidth,
+        fontSizePercentage,
     })
 
     const externalLinkDisplayMode = useAppSelector(state => state.user.settings?.externalLinkIconDisplayMode)
@@ -137,6 +142,9 @@ export function FeedEntry(props: FeedEntryProps) {
     const compactHeader = !props.expanded && (viewMode === "title" || viewMode === "cozy")
     return (
         <Paper
+            component="article"
+            id={Constants.dom.entryId(props.entry)}
+            data-id={props.entry.id}
             withBorder
             radius={borderRadius}
             className={cx(classes.paper, {
@@ -176,10 +184,10 @@ export function FeedEntry(props: FeedEntryProps) {
             </a>
             {props.expanded && (
                 <Box px={paddingX} pb={paddingY} onClick={props.onBodyClick}>
-                    <Box className={classes.body}>
+                    <Box className={`${classes.body} cf-content`}>
                         <FeedEntryBody entry={props.entry} />
                     </Box>
-                    <Divider variant="dashed" my={paddingY} />
+                    <Divider variant="dashed" my={paddingY} className="cf-footer-divider" />
                     <FeedEntryFooter entry={props.entry} />
                 </Box>
             )}

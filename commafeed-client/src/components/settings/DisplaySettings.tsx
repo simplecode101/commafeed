@@ -1,18 +1,21 @@
 import { msg } from "@lingui/core/macro"
 import { useLingui } from "@lingui/react"
 import { Trans } from "@lingui/react/macro"
-import { Divider, Group, NumberInput, Radio, Select, SimpleGrid, Stack, Switch } from "@mantine/core"
+import { Box, Divider, Group, NumberInput, Radio, Select, type SelectProps, SimpleGrid, Stack, Switch } from "@mantine/core"
 import type { ComboboxData } from "@mantine/core/lib/components/Combobox/Combobox.types"
-import { Constants } from "app/constants"
-import { useAppDispatch, useAppSelector } from "app/store"
-import type { IconDisplayMode, ScrollMode, SharingSettings } from "app/types"
+import type { ReactNode } from "react"
+import { Constants } from "@/app/constants"
+import { useAppDispatch, useAppSelector } from "@/app/store"
+import type { IconDisplayMode, ScrollMode, SharingSettings } from "@/app/types"
 import {
     changeCustomContextMenu,
     changeEntriesToKeepOnTopWhenScrolling,
     changeExternalLinkIconDisplayMode,
     changeLanguage,
     changeMarkAllAsReadConfirmation,
+    changeMarkAllAsReadNavigateToUnread,
     changeMobileFooter,
+    changePrimaryColor,
     changeScrollMarks,
     changeScrollMode,
     changeScrollSpeed,
@@ -21,9 +24,8 @@ import {
     changeStarIconDisplayMode,
     changeUnreadCountFavicon,
     changeUnreadCountTitle,
-} from "app/user/thunks"
-import { locales } from "i18n"
-import type { ReactNode } from "react"
+} from "@/app/user/thunks"
+import { locales } from "@/i18n"
 
 export function DisplaySettings() {
     const language = useAppSelector(state => state.user.settings?.language)
@@ -35,13 +37,15 @@ export function DisplaySettings() {
     const starIconDisplayMode = useAppSelector(state => state.user.settings?.starIconDisplayMode)
     const externalLinkIconDisplayMode = useAppSelector(state => state.user.settings?.externalLinkIconDisplayMode)
     const markAllAsReadConfirmation = useAppSelector(state => state.user.settings?.markAllAsReadConfirmation)
+    const markAllAsReadNavigateToNextUnread = useAppSelector(state => state.user.settings?.markAllAsReadNavigateToNextUnread)
     const customContextMenu = useAppSelector(state => state.user.settings?.customContextMenu)
     const mobileFooter = useAppSelector(state => state.user.settings?.mobileFooter)
     const unreadCountTitle = useAppSelector(state => state.user.settings?.unreadCountTitle)
     const unreadCountFavicon = useAppSelector(state => state.user.settings?.unreadCountFavicon)
     const sharingSettings = useAppSelector(state => state.user.settings?.sharingSettings)
-    const dispatch = useAppDispatch()
+    const primaryColor = useAppSelector(state => state.user.settings?.primaryColor) || Constants.theme.defaultPrimaryColor
     const { _ } = useLingui()
+    const dispatch = useAppDispatch()
 
     const scrollModeOptions: Record<ScrollMode, ReactNode> = {
         always: <Trans>Always</Trans>,
@@ -68,16 +72,49 @@ export function DisplaySettings() {
         },
     ]
 
+    const colorData: ComboboxData = [
+        { value: "dark", label: _(msg`Dark`) },
+        { value: "gray", label: _(msg`Gray`) },
+        { value: "red", label: _(msg`Red`) },
+        { value: "pink", label: _(msg`Pink`) },
+        { value: "grape", label: _(msg`Grape`) },
+        { value: "violet", label: _(msg`Violet`) },
+        { value: "indigo", label: _(msg`Indigo`) },
+        { value: "blue", label: _(msg`Blue`) },
+        { value: "cyan", label: _(msg`Cyan`) },
+        { value: "green", label: _(msg`Green`) },
+        { value: "lime", label: _(msg`Lime`) },
+        { value: "yellow", label: _(msg`Yellow`) },
+        { value: "orange", label: _(msg`Orange`) },
+        { value: "teal", label: _(msg`Teal`) },
+    ].sort((a, b) => a.label.localeCompare(b.label))
+    const colorRenderer: SelectProps["renderOption"] = ({ option }) => (
+        <Group>
+            <Box h={18} w={18} bg={option.value} />
+            <Box>{option.label}</Box>
+        </Group>
+    )
+
     return (
         <Stack>
+            <Divider label={<Trans>Display</Trans>} labelPosition="center" />
+
             <Select
-                description={<Trans>Language</Trans>}
+                label={<Trans>Language</Trans>}
                 value={language}
                 data={locales.map(l => ({
                     value: l.key,
                     label: l.label,
                 }))}
                 onChange={async s => await (s && dispatch(changeLanguage(s)))}
+            />
+
+            <Select
+                label={<Trans>Primary color</Trans>}
+                data={colorData}
+                value={primaryColor}
+                onChange={async value => value && (await dispatch(changePrimaryColor(value)))}
+                renderOption={colorRenderer}
             />
 
             <Switch
@@ -90,6 +127,12 @@ export function DisplaySettings() {
                 label={<Trans>Show confirmation when marking all entries as read</Trans>}
                 checked={markAllAsReadConfirmation}
                 onChange={async e => await dispatch(changeMarkAllAsReadConfirmation(e.currentTarget.checked))}
+            />
+
+            <Switch
+                label={<Trans>Navigate to the next category/feed with unread entries when marking all entries as read</Trans>}
+                checked={markAllAsReadNavigateToNextUnread}
+                onChange={async e => await dispatch(changeMarkAllAsReadNavigateToUnread(e.currentTarget.checked))}
             />
 
             <Switch
@@ -115,14 +158,14 @@ export function DisplaySettings() {
             <Divider label={<Trans>Entry headers</Trans>} labelPosition="center" />
 
             <Select
-                description={<Trans>Show star icon</Trans>}
+                label={<Trans>Show star icon</Trans>}
                 value={starIconDisplayMode}
                 data={displayModeData}
                 onChange={async s => await dispatch(changeStarIconDisplayMode(s as IconDisplayMode))}
             />
 
             <Select
-                description={<Trans>Show external link icon</Trans>}
+                label={<Trans>Show external link icon</Trans>}
                 value={externalLinkIconDisplayMode}
                 data={displayModeData}
                 onChange={async s => await dispatch(changeExternalLinkIconDisplayMode(s as IconDisplayMode))}

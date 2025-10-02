@@ -1,7 +1,7 @@
-import { createAppAsyncThunk } from "app/async-thunk"
-import { client } from "app/client"
-import { reloadEntries } from "app/entries/thunks"
-import type { IconDisplayMode, ReadingMode, ReadingOrder, ScrollMode, SharingSettings } from "app/types"
+import { createAppAsyncThunk } from "@/app/async-thunk"
+import { client } from "@/app/client"
+import { reloadEntries } from "@/app/entries/thunks"
+import type { IconDisplayMode, ReadingMode, ReadingOrder, ScrollMode, SharingSettings } from "@/app/types"
 
 export const reloadSettings = createAppAsyncThunk("settings/reload", async () => await client.user.getSettings().then(r => r.data))
 
@@ -89,6 +89,15 @@ export const changeMarkAllAsReadConfirmation = createAppAsyncThunk(
     }
 )
 
+export const changeMarkAllAsReadNavigateToUnread = createAppAsyncThunk(
+    "settings/markAllAsReadNavigateToUnread",
+    (markAllAsReadNavigateToNextUnread: boolean, thunkApi) => {
+        const { settings } = thunkApi.getState().user
+        if (!settings) return
+        client.user.saveSettings({ ...settings, markAllAsReadNavigateToNextUnread })
+    }
+)
+
 export const changeCustomContextMenu = createAppAsyncThunk("settings/customContextMenu", (customContextMenu: boolean, thunkApi) => {
     const { settings } = thunkApi.getState().user
     if (!settings) return
@@ -111,6 +120,12 @@ export const changeUnreadCountFavicon = createAppAsyncThunk("settings/unreadCoun
     const { settings } = thunkApi.getState().user
     if (!settings) return
     client.user.saveSettings({ ...settings, unreadCountFavicon })
+})
+
+export const changePrimaryColor = createAppAsyncThunk("settings/primaryColor", (primaryColor: string, thunkApi) => {
+    const { settings } = thunkApi.getState().user
+    if (!settings) return
+    client.user.saveSettings({ ...settings, primaryColor })
 })
 
 export const changeSharingSetting = createAppAsyncThunk(

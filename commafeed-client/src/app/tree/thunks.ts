@@ -1,15 +1,16 @@
-import { createAppAsyncThunk } from "app/async-thunk"
-import { client } from "app/client"
-import { redirectToCategory, redirectToFeed } from "app/redirect/thunks"
-import { incrementUnreadCount } from "app/tree/slice"
-import type { CollapseRequest, Subscription } from "app/types"
-import { flattenCategoryTree, visitCategoryTree } from "app/utils"
+import { createAppAsyncThunk } from "@/app/async-thunk"
+import { client } from "@/app/client"
+import { Constants } from "@/app/constants"
+import { redirectToCategory, redirectToFeed } from "@/app/redirect/thunks"
+import { incrementUnreadCount } from "@/app/tree/slice"
+import type { CollapseRequest, Subscription } from "@/app/types"
+import { flattenCategoryTree, visitCategoryTree } from "@/app/utils"
 
 export const reloadTree = createAppAsyncThunk("tree/reload", async () => await client.category.getRoot().then(r => r.data))
 
 export const collapseTreeCategory = createAppAsyncThunk(
     "tree/category/collapse",
-    async (req: CollapseRequest) => await client.category.collapse(req)
+    async (req: CollapseRequest) => await client.category.collapse(req).then(r => r.data)
 )
 
 export const selectNextUnreadTreeItem = createAppAsyncThunk(
@@ -53,6 +54,9 @@ export const selectNextUnreadTreeItem = createAppAsyncThunk(
                 }
             }
         }
+
+        // redirect to 'all' if no unread categories or feeds found or if we reached the end of the list
+        thunkApi.dispatch(redirectToCategory(Constants.categories.all.id))
     }
 )
 

@@ -1,11 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit"
-import { entriesSlice } from "app/entries/slice"
-import { redirectSlice } from "app/redirect/slice"
-import { serverSlice } from "app/server/slice"
-import { treeSlice } from "app/tree/slice"
-import type { LocalSettings } from "app/types"
-import { initialLocalSettings, userSlice } from "app/user/slice"
 import { type TypedUseSelectorHook, useDispatch, useSelector } from "react-redux"
+import { entriesSlice } from "@/app/entries/slice"
+import { redirectSlice } from "@/app/redirect/slice"
+import { serverSlice } from "@/app/server/slice"
+import { treeSlice } from "@/app/tree/slice"
+import type { LocalSettings } from "@/app/types"
+import { initialLocalSettings, userSlice } from "@/app/user/slice"
 
 export const reducers = {
     entries: entriesSlice.reducer,
@@ -17,19 +17,9 @@ export const reducers = {
 
 const loadLocalSettings = (): LocalSettings => {
     const json = localStorage.getItem("commafeed-local-settings")
-    if (json) {
-        return JSON.parse(json)
-    }
-
-    // load old settings
-    const viewMode = localStorage.getItem("view-mode")
-    const sidebarWidth = localStorage.getItem("sidebar-width")
-    const announcementHash = localStorage.getItem("announcement-hash")
     return {
         ...initialLocalSettings,
-        viewMode: viewMode ? JSON.parse(viewMode) : initialLocalSettings.viewMode,
-        sidebarWidth: sidebarWidth ? JSON.parse(sidebarWidth) : initialLocalSettings.sidebarWidth,
-        announcementHash: announcementHash ? JSON.parse(announcementHash) : initialLocalSettings.announcementHash,
+        ...(json ? JSON.parse(json) : {}),
     }
 }
 

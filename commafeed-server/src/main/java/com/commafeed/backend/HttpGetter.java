@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.CacheControl;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.DnsResolver;
 import org.apache.hc.client5.http.SystemDefaultDnsResolver;
@@ -55,8 +56,8 @@ import com.google.common.net.HttpHeaders;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Lombok;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import nl.altindag.ssl.SSLFactory;
 import nl.altindag.ssl.apache5.util.Apache5SslUtils;
@@ -67,12 +68,12 @@ import nl.altindag.ssl.apache5.util.Apache5SslUtils;
 @Singleton
 @Slf4j
 public class HttpGetter {
+	private static final DnsResolver DNS_RESOLVER = SystemDefaultDnsResolver.INSTANCE;
 
 	private final CommaFeedConfiguration config;
 	private final InstantSource instantSource;
 	private final CloseableHttpClient client;
 	private final Cache<HttpRequest, HttpResponse> cache;
-	private final DnsResolver dnsResolver = SystemDefaultDnsResolver.INSTANCE;
 
 	public HttpGetter(CommaFeedConfiguration config, InstantSource instantSource, CommaFeedVersion version, MetricRegistry metrics) {
 		this.config = config;
@@ -93,7 +94,7 @@ public class HttpGetter {
 		metrics.registerGauge(MetricRegistry.name(getClass(), "pool", "pending"), () -> connectionManager.getTotalStats().getPending());
 		metrics.registerGauge(MetricRegistry.name(getClass(), "cache", "size"), () -> cache == null ? 0 : cache.size());
 		metrics.registerGauge(MetricRegistry.name(getClass(), "cache", "memoryUsage"),
-				() -> cache == null ? 0 : cache.asMap().values().stream().mapToInt(e -> e.content != null ? e.content.length : 0).sum());
+				() -> cache == null ? 0 : cache.asMap().values().stream().mapToInt(e -> ArrayUtils.getLength(e.content)).sum());
 	}
 
 	public HttpResult get(String url)
@@ -120,14 +121,14 @@ public class HttpGetter {
 				if (e.getCause() instanceof IOException ioe) {
 					throw ioe;
 				} else {
-					throw new RuntimeException(e);
+					throw Lombok.sneakyThrow(e);
 				}
 			}
 		}
 
-		int code = response.getCode();
-		if (code == HttpStatus.SC_TOO_MANY_REQUESTS || code == HttpStatus.SC_SERVICE_UNAVAILABLE && response.getRetryAfter() != null) {
-			throw new TooManyRequestsException(response.getRetryAfter());
+		int code = response.code();
+		if (code == HttpStatus.SC_TOO_MANY_REQUESTS || code == HttpStatus.SC_SERVICE_UNAVAILABLE && response.retryAfter() != null) {
+			throw new TooManyRequestsException(response.retryAfter());
 		}
 
 		if (code == HttpStatus.SC_NOT_MODIFIED) {
@@ -138,20 +139,20 @@ public class HttpGetter {
 			throw new HttpResponseException(code, "Server returned HTTP error code " + code);
 		}
 
-		String lastModifiedHeader = response.getLastModifiedHeader();
-		String eTagHeader = response.getETagHeader();
+		String lastModifiedHeader = response.lastModifiedHeader();
+		String eTagHeader = response.eTagHeader();
 
-		Duration validFor = Optional.ofNullable(response.getCacheControl())
+		Duration validFor = Optional.ofNullable(response.cacheControl())
 				.filter(cc -> cc.getMaxAge() >= 0)
 				.map(cc -> Duration.ofSeconds(cc.getMaxAge()))
 				.orElse(Duration.ZERO);
 
-		return new HttpResult(response.getContent(), response.getContentType(), lastModifiedHeader, eTagHeader,
-				response.getUrlAfterRedirect(), validFor);
+		return new HttpResult(response.content(), response.contentType(), lastModifiedHeader, eTagHeader, response.urlAfterRedirect(),
+				validFor);
 	}
 
 	private void ensureHttpScheme(String scheme) throws SchemeNotAllowedException {
-		if (!"http".equals(scheme) && !"https".equals(scheme)) {
+		if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
 			throw new SchemeNotAllowedException(scheme);
 		}
 	}
@@ -161,7 +162,7 @@ public class HttpGetter {
 			throw new HostNotAllowedException(null);
 		}
 
-		InetAddress[] addresses = dnsResolver.resolve(host);
+		InetAddress[] addresses = DNS_RESOLVER.resolve(host);
 		if (Stream.of(addresses).anyMatch(this::isPrivateAddress)) {
 			throw new HostNotAllowedException(host);
 		}
@@ -252,8 +253,8 @@ public class HttpGetter {
 				return null;
 			}
 
-			byte[] bytes = ByteStreams.limit(input, maxBytes).readAllBytes();
-			if (bytes.length == maxBytes) {
+			byte[] bytes = ByteStreams.limit(input, maxBytes + 1).readAllBytes();
+			if (bytes.length > maxBytes) {
 				throw new IOException("Response size exceeds the maximum allowed size (%s bytes)".formatted(maxBytes));
 			}
 			return bytes;
@@ -274,7 +275,7 @@ public class HttpGetter {
 				.setDefaultTlsConfig(TlsConfig.custom().setHandshakeTimeout(Timeout.of(config.httpClient().sslHandshakeTimeout())).build())
 				.setMaxConnPerRoute(poolSize)
 				.setMaxConnTotal(poolSize)
-				.setDnsResolver(dnsResolver)
+				.setDnsResolver(DNS_RESOLVER)
 				.build();
 
 	}
@@ -305,7 +306,7 @@ public class HttpGetter {
 		}
 
 		return CacheBuilder.newBuilder()
-				.weigher((HttpRequest key, HttpResponse value) -> value.getContent() != null ? value.getContent().length : 0)
+				.weigher((HttpRequest key, HttpResponse value) -> value.content() != null ? value.content().length : 0)
 				.maximumWeight(cacheConfig.maximumMemorySize().asLongValue())
 				.expireAfterWrite(cacheConfig.expiration())
 				.build();
@@ -396,26 +397,12 @@ public class HttpGetter {
 		}
 	}
 
-	@Value
-	private static class HttpResponse {
-		int code;
-		String lastModifiedHeader;
-		String eTagHeader;
-		CacheControl cacheControl;
-		Instant retryAfter;
-		byte[] content;
-		String contentType;
-		String urlAfterRedirect;
+	private record HttpResponse(int code, String lastModifiedHeader, String eTagHeader, CacheControl cacheControl, Instant retryAfter,
+			byte[] content, String contentType, String urlAfterRedirect) {
 	}
 
-	@Value
-	public static class HttpResult {
-		byte[] content;
-		String contentType;
-		String lastModifiedSince;
-		String eTag;
-		String urlAfterRedirect;
-		Duration validFor;
+	public record HttpResult(byte[] content, String contentType, String lastModifiedSince, String eTag, String urlAfterRedirect,
+			Duration validFor) {
 	}
 
 }

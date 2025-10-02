@@ -1,81 +1,41 @@
 package com.commafeed.backend.feed;
 
+import java.time.Instant;
+import java.util.Date;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import com.commafeed.frontend.model.Entry;
+import com.rometools.rome.feed.synd.SyndEntry;
 
 class FeedUtilsTest {
 
 	@Test
-	void testNormalization() {
-		String urla1 = "http://example.com/hello?a=1&b=2";
-		String urla2 = "http://www.example.com/hello?a=1&b=2";
-		String urla3 = "http://EXAmPLe.com/HELLo?a=1&b=2";
-		String urla4 = "http://example.com/hello?b=2&a=1";
-		String urla5 = "https://example.com/hello?a=1&b=2";
+	void asRss() {
+		Entry entry = new Entry();
+		entry.setId("1");
+		entry.setGuid("guid-1");
+		entry.setTitle("Test Entry");
+		entry.setContent("This is a test entry content.");
+		entry.setCategories("test,example");
+		entry.setRtl(false);
+		entry.setAuthor("Author Name");
+		entry.setEnclosureUrl("http://example.com/enclosure.mp3");
+		entry.setEnclosureType("audio/mpeg");
+		entry.setDate(Instant.ofEpochSecond(1));
+		entry.setUrl("http://example.com/test-entry");
 
-		String urlb1 = "http://ftr.fivefilters.org/makefulltextfeed.php?url=http%3A%2F%2Ffeeds.howtogeek.com%2FHowToGeek&max=10&summary=1";
-		String urlb2 = "http://ftr.fivefilters.org/makefulltextfeed.php?url=http://feeds.howtogeek.com/HowToGeek&max=10&summary=1";
-
-		String urlc1 = "http://feeds.feedburner.com/Frandroid";
-		String urlc2 = "http://feeds2.feedburner.com/frandroid";
-		String urlc3 = "http://feedproxy.google.com/frandroid";
-		String urlc4 = "http://feeds.feedburner.com/Frandroid/";
-		String urlc5 = "http://feeds.feedburner.com/Frandroid?format=rss";
-
-		String urld1 = "http://fivefilters.org/content-only/makefulltextfeed.php?url=http://feeds.feedburner.com/Frandroid";
-		String urld2 = "http://fivefilters.org/content-only/makefulltextfeed.php?url=http://feeds2.feedburner.com/Frandroid";
-
-		Assertions.assertEquals(FeedUtils.normalizeURL(urla1), FeedUtils.normalizeURL(urla2));
-		Assertions.assertEquals(FeedUtils.normalizeURL(urla1), FeedUtils.normalizeURL(urla3));
-		Assertions.assertEquals(FeedUtils.normalizeURL(urla1), FeedUtils.normalizeURL(urla4));
-		Assertions.assertEquals(FeedUtils.normalizeURL(urla1), FeedUtils.normalizeURL(urla5));
-
-		Assertions.assertEquals(FeedUtils.normalizeURL(urlb1), FeedUtils.normalizeURL(urlb2));
-
-		Assertions.assertEquals(FeedUtils.normalizeURL(urlc1), FeedUtils.normalizeURL(urlc2));
-		Assertions.assertEquals(FeedUtils.normalizeURL(urlc1), FeedUtils.normalizeURL(urlc3));
-		Assertions.assertEquals(FeedUtils.normalizeURL(urlc1), FeedUtils.normalizeURL(urlc4));
-		Assertions.assertEquals(FeedUtils.normalizeURL(urlc1), FeedUtils.normalizeURL(urlc5));
-
-		Assertions.assertNotEquals(FeedUtils.normalizeURL(urld1), FeedUtils.normalizeURL(urld2));
-
+		SyndEntry syndEntry = FeedUtils.asRss(entry);
+		Assertions.assertEquals("guid-1", syndEntry.getUri());
+		Assertions.assertEquals("Test Entry", syndEntry.getTitle());
+		Assertions.assertEquals("Author Name", syndEntry.getAuthor());
+		Assertions.assertEquals(1, syndEntry.getContents().size());
+		Assertions.assertEquals("This is a test entry content.", syndEntry.getContents().get(0).getValue());
+		Assertions.assertEquals(1, syndEntry.getEnclosures().size());
+		Assertions.assertEquals("http://example.com/enclosure.mp3", syndEntry.getEnclosures().get(0).getUrl());
+		Assertions.assertEquals("audio/mpeg", syndEntry.getEnclosures().get(0).getType());
+		Assertions.assertEquals("http://example.com/test-entry", syndEntry.getLink());
+		Assertions.assertEquals(Date.from(Instant.ofEpochSecond(1)), syndEntry.getPublishedDate());
 	}
-
-	@Test
-	void testToAbsoluteUrl() {
-		String expected = "http://a.com/blog/entry/1";
-
-		// usual cases
-		Assertions.assertEquals(expected, FeedUtils.toAbsoluteUrl("http://a.com/blog/entry/1", "http://a.com/feed/", "http://a.com/feed/"));
-		Assertions.assertEquals(expected, FeedUtils.toAbsoluteUrl("http://a.com/blog/entry/1", "http://a.com/feed", "http://a.com/feed"));
-
-		// relative links
-		Assertions.assertEquals(expected, FeedUtils.toAbsoluteUrl("../blog/entry/1", "http://a.com/feed/", "http://a.com/feed/"));
-		Assertions.assertEquals(expected, FeedUtils.toAbsoluteUrl("../blog/entry/1", "feed.xml", "http://a.com/feed/feed.xml"));
-
-		// root-relative links
-		Assertions.assertEquals(expected, FeedUtils.toAbsoluteUrl("/blog/entry/1", "/feed", "http://a.com/feed"));
-
-		// real cases
-		Assertions.assertEquals("https://github.com/erusev/parsedown/releases/tag/1.3.0", FeedUtils.toAbsoluteUrl(
-				"/erusev/parsedown/releases/tag/1.3.0", "/erusev/parsedown/releases", "https://github.com/erusev/parsedown/tags.atom"));
-		Assertions.assertEquals("http://ergoemacs.org/emacs/elisp_all_about_lines.html",
-				FeedUtils.toAbsoluteUrl("elisp_all_about_lines.html", "blog.xml", "http://ergoemacs.org/emacs/blog.xml"));
-
-	}
-
-	@Test
-	void testRemoveTrailingSlash() {
-		final String url = "http://localhost/";
-		final String result = FeedUtils.removeTrailingSlash(url);
-		Assertions.assertEquals("http://localhost", result);
-	}
-
-	@Test
-	void testRemoveTrailingSlashLastSlashOnly() {
-		final String url = "http://localhost//";
-		final String result = FeedUtils.removeTrailingSlash(url);
-		Assertions.assertEquals("http://localhost/", result);
-	}
-
 }

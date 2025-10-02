@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.net.NoRouteToHostException;
 import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.time.Instant;
@@ -103,12 +104,12 @@ class HttpGetterTest {
 						.withHeader(HttpHeaders.RETRY_AFTER, "120"));
 
 		HttpResult result = getter.get(this.feedUrl);
-		Assertions.assertArrayEquals(feedContent, result.getContent());
-		Assertions.assertEquals(MediaType.APPLICATION_ATOM_XML.toString(), result.getContentType());
-		Assertions.assertEquals("123456", result.getLastModifiedSince());
-		Assertions.assertEquals("78910", result.getETag());
-		Assertions.assertEquals(Duration.ofSeconds(60), result.getValidFor());
-		Assertions.assertEquals(this.feedUrl, result.getUrlAfterRedirect());
+		Assertions.assertArrayEquals(feedContent, result.content());
+		Assertions.assertEquals(MediaType.APPLICATION_ATOM_XML.toString(), result.contentType());
+		Assertions.assertEquals("123456", result.lastModifiedSince());
+		Assertions.assertEquals("78910", result.eTag());
+		Assertions.assertEquals(Duration.ofSeconds(60), result.validFor());
+		Assertions.assertEquals(this.feedUrl, result.urlAfterRedirect());
 	}
 
 	@Test
@@ -120,7 +121,7 @@ class HttpGetterTest {
 						.withHeader(HttpHeaders.CACHE_CONTROL, "max-age=60; must-revalidate"));
 
 		HttpResult result = getter.get(this.feedUrl);
-		Assertions.assertEquals(Duration.ZERO, result.getValidFor());
+		Assertions.assertEquals(Duration.ZERO, result.validFor());
 	}
 
 	@Test
@@ -166,7 +167,7 @@ class HttpGetterTest {
 				.respond(HttpResponse.response().withBody(feedContent).withContentType(MediaType.APPLICATION_ATOM_XML));
 
 		HttpResult result = getter.get(this.feedUrl);
-		Assertions.assertEquals("http://localhost:" + this.mockServerClient.getPort() + "/redirected-2", result.getUrlAfterRedirect());
+		Assertions.assertEquals("http://localhost:" + this.mockServerClient.getPort() + "/redirected-2", result.urlAfterRedirect());
 	}
 
 	@Test
@@ -186,6 +187,13 @@ class HttpGetterTest {
 		this.getter = new HttpGetter(config, () -> NOW, Mockito.mock(CommaFeedVersion.class), Mockito.mock(MetricRegistry.class));
 		// try to connect to a non-routable address
 		// https://stackoverflow.com/a/904609
+		Exception e = Assertions.assertThrows(Exception.class, () -> getter.get("http://10.255.255.1"));
+		Assertions.assertTrue(e instanceof ConnectTimeoutException
+				// A NoRouteToHostException can also be thrown in some cases
+				// depending on the underlying network configuration
+				// https://github.com/Athou/commafeed/issues/1876
+				|| e instanceof NoRouteToHostException,
+				"Expected ConnectTimeoutException or NoRouteToHostException, but got: " + e.getClass().getName());
 		Assertions.assertThrows(ConnectTimeoutException.class, () -> getter.get("http://192.0.2.1"));
 	}
 
@@ -195,7 +203,7 @@ class HttpGetterTest {
 				.respond(HttpResponse.response().withBody("ok"));
 
 		HttpResult result = getter.get(this.feedUrl);
-		Assertions.assertEquals("ok", new String(result.getContent()));
+		Assertions.assertEquals("ok", new String(result.content()));
 	}
 
 	@Test
@@ -277,7 +285,7 @@ class HttpGetterTest {
 		this.mockServerClient.when(HttpRequest.request().withMethod("GET")).respond(HttpResponse.response().withBody("ok"));
 
 		HttpResult result = getter.get("https://localhost:" + this.mockServerClient.getPort());
-		Assertions.assertEquals("ok", new String(result.getContent()));
+		Assertions.assertEquals("ok", new String(result.content()));
 	}
 
 	@Test
@@ -329,7 +337,7 @@ class HttpGetterTest {
 			});
 
 			HttpResult result = getter.get(HttpGetterTest.this.feedUrl);
-			Assertions.assertEquals(body, new String(result.getContent()));
+			Assertions.assertEquals(body, new String(result.content()));
 		}
 
 		@FunctionalInterface

@@ -1,11 +1,11 @@
-import { ImageWithPlaceholderWhileLoading } from "components/ImageWithPlaceholderWhileLoading"
+import { ImageWithPlaceholderWhileLoading } from "@/components/ImageWithPlaceholderWhileLoading"
 
 export interface FeedFaviconProps {
     url: string
     size?: number
 }
 
-export function FeedFavicon({ url, size = 18 }: FeedFaviconProps) {
+export function FeedFavicon({ url, size = 18 }: Readonly<FeedFaviconProps>) {
     return (
         <ImageWithPlaceholderWhileLoading
             src={url}

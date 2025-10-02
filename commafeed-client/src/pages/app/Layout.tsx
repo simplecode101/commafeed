@@ -1,29 +1,30 @@
 import { msg } from "@lingui/core/macro"
 import { ActionIcon, AppShell, Box, Center, Group, ScrollArea, Title, useMantineTheme } from "@mantine/core"
-import { Constants } from "app/constants"
-import { redirectToAdd, redirectToRootCategory } from "app/redirect/thunks"
-import { useAppDispatch, useAppSelector } from "app/store"
-import { setMobileMenuOpen } from "app/tree/slice"
-import { reloadTree } from "app/tree/thunks"
-import { setSidebarWidth } from "app/user/slice"
-import { reloadProfile, reloadSettings, reloadTags } from "app/user/thunks"
-import { ActionButton } from "components/ActionButton"
-import { AnnouncementDialog } from "components/AnnouncementDialog"
-import { Loader } from "components/Loader"
-import { Logo } from "components/Logo"
-import { OnDesktop } from "components/responsive/OnDesktop"
-import { OnMobile } from "components/responsive/OnMobile"
-import { useAppLoading } from "hooks/useAppLoading"
-import { useBrowserExtension } from "hooks/useBrowserExtension"
-import { useMobile } from "hooks/useMobile"
-import { useWebSocket } from "hooks/useWebSocket"
-import { LoadingPage } from "pages/LoadingPage"
 import { type ReactNode, type RefObject, Suspense, useEffect, useRef } from "react"
 import Draggable from "react-draggable"
 import { TbMenu2, TbPlus, TbX } from "react-icons/tb"
 import { Outlet } from "react-router-dom"
 import { useSwipeable } from "react-swipeable"
-import { tss } from "tss"
+import { Constants } from "@/app/constants"
+import { redirectToAdd, redirectToRootCategory } from "@/app/redirect/thunks"
+import { useAppDispatch, useAppSelector } from "@/app/store"
+import { setMobileMenuOpen } from "@/app/tree/slice"
+import { reloadTree } from "@/app/tree/thunks"
+import { setSidebarWidth } from "@/app/user/slice"
+import { reloadProfile, reloadSettings, reloadTags } from "@/app/user/thunks"
+import { ActionButton } from "@/components/ActionButton"
+import { AnnouncementDialog } from "@/components/AnnouncementDialog"
+import { Loader } from "@/components/Loader"
+import { Logo } from "@/components/Logo"
+import { MarkAllAsReadConfirmationDialog } from "@/components/MarkAllAsReadConfirmationDialog"
+import { OnDesktop } from "@/components/responsive/OnDesktop"
+import { OnMobile } from "@/components/responsive/OnMobile"
+import { useAppLoading } from "@/hooks/useAppLoading"
+import { useBrowserExtension } from "@/hooks/useBrowserExtension"
+import { useMobile } from "@/hooks/useMobile"
+import { useWebSocket } from "@/hooks/useWebSocket"
+import { LoadingPage } from "@/pages/LoadingPage"
+import { tss } from "@/tss"
 
 interface LayoutProps {
     sidebar: ReactNode
@@ -34,10 +35,17 @@ interface LayoutProps {
 function LogoAndTitle() {
     const dispatch = useAppDispatch()
     return (
-        <Center inline onClick={async () => await dispatch(redirectToRootCategory())} style={{ cursor: "pointer" }}>
-            <Logo size={24} />
-            <Title order={3} pl="md">
-                CommaFeed-AI1.0
+        <Center
+            className="cf-logo-title"
+            inline
+            onClick={async () => await dispatch(redirectToRootCategory())}
+            style={{ cursor: "pointer" }}
+        >
+            <Box className="cf-logo">
+                <Logo size={24} />
+            </Box>
+            <Title order={3} pl="md" className="cf-title">
+                CommaFeed
             </Title>
         </Center>
     )
@@ -60,7 +68,7 @@ const useStyles = tss
         }
     })
 
-export default function Layout(props: LayoutProps) {
+export default function Layout(props: Readonly<LayoutProps>) {
     const theme = useMantineTheme()
     const mobile = useMobile()
     const { isBrowserExtensionPopup } = useBrowserExtension()
@@ -176,9 +184,9 @@ export default function Layout(props: LayoutProps) {
                 }}
                 padding={{ base: 6, [Constants.layout.mobileBreakpointName]: "md" }}
             >
-                <AppShell.Header id={Constants.dom.headerId}>{!headerInFooter && header}</AppShell.Header>
-                <AppShell.Footer id={Constants.dom.footerId}>{headerInFooter && header}</AppShell.Footer>
-                <AppShell.Navbar id="sidebar" p={sidebarPadding}>
+                <AppShell.Header>{!headerInFooter && header}</AppShell.Header>
+                <AppShell.Footer>{headerInFooter && header}</AppShell.Footer>
+                <AppShell.Navbar p={sidebarPadding}>
                     <AppShell.Section grow component={ScrollArea} mx="-sm" px="sm">
                         <Box className={classes.sidebarContent}>{props.sidebar}</Box>
                     </AppShell.Section>
@@ -198,7 +206,6 @@ export default function Layout(props: LayoutProps) {
                         grid={[30, 30]}
                         onDrag={(_e, data) => {
                             dispatch(setSidebarWidth(data.x))
-                            return
                         }}
                     >
                         <Box
@@ -213,9 +220,10 @@ export default function Layout(props: LayoutProps) {
                     </Draggable>
                 </OnDesktop>
 
-                <AppShell.Main id="content">
+                <AppShell.Main>
                     <Suspense fallback={<Loader />}>
                         <AnnouncementDialog />
+                        <MarkAllAsReadConfirmationDialog />
                         <Outlet />
                     </Suspense>
                 </AppShell.Main>

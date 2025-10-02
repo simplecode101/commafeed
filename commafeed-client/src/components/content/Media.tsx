@@ -1,8 +1,8 @@
 import { Box } from "@mantine/core"
-import { Constants } from "app/constants"
-import { calculatePlaceholderSize } from "app/utils"
-import { ImageWithPlaceholderWhileLoading } from "components/ImageWithPlaceholderWhileLoading"
-import { BasicHtmlStyles } from "components/content/BasicHtmlStyles"
+import { Constants } from "@/app/constants"
+import { calculatePlaceholderSize } from "@/app/utils"
+import { BasicHtmlStyles } from "@/components/content/BasicHtmlStyles"
+import { ImageWithPlaceholderWhileLoading } from "@/components/ImageWithPlaceholderWhileLoading"
 import { Content } from "./Content"
 
 export interface MediaProps {
@@ -12,7 +12,7 @@ export interface MediaProps {
     description?: string
 }
 
-export function Media(props: MediaProps) {
+export function Media(props: Readonly<MediaProps>) {
     const width = props.thumbnailWidth
     const height = props.thumbnailHeight
     const placeholderSize = calculatePlaceholderSize({

@@ -1,13 +1,19 @@
-import { createAppAsyncThunk } from "app/async-thunk"
-import { client } from "app/client"
-import { Constants } from "app/constants"
-import { type EntrySource, type EntrySourceType, entriesSlice, setSearch } from "app/entries/slice"
-import type { RootState } from "app/store"
-import { reloadTree } from "app/tree/thunks"
-import type { Entry, MarkRequest, TagRequest } from "app/types"
-import { reloadTags } from "app/user/thunks"
-import { scrollToWithCallback } from "app/utils"
 import { flushSync } from "react-dom"
+import { createAppAsyncThunk } from "@/app/async-thunk"
+import { client } from "@/app/client"
+import { Constants } from "@/app/constants"
+import {
+    type EntrySource,
+    type EntrySourceType,
+    entriesSlice,
+    setMarkAllAsReadConfirmationDialogOpen,
+    setSearch,
+} from "@/app/entries/slice"
+import type { RootState } from "@/app/store"
+import { reloadTree, selectNextUnreadTreeItem } from "@/app/tree/thunks"
+import type { Entry, MarkRequest, TagRequest } from "@/app/types"
+import { reloadTags } from "@/app/user/thunks"
+import { scrollToWithCallback } from "@/app/utils"
 
 const getEndpoint = (sourceType: EntrySourceType) =>
     sourceType === "category" || sourceType === "tag" ? client.category.getEntries : client.feed.getEntries
@@ -50,7 +56,7 @@ const buildGetEntriesPaginatedRequest = (state: RootState, source: EntrySource, 
     keywords: state.entries.search,
 })
 
-export const reloadEntries = createAppAsyncThunk("entries/reload", (arg, thunkApi) => {
+export const reloadEntries = createAppAsyncThunk("entries/reload", (_, thunkApi) => {
     const state = thunkApi.getState()
     thunkApi.dispatch(loadEntries({ source: state.entries.source, clearSearch: false }))
 })
@@ -120,6 +126,36 @@ export const markAllEntries = createAppAsyncThunk(
         await endpoint(arg.req)
         thunkApi.dispatch(reloadEntries())
         thunkApi.dispatch(reloadTree())
+    }
+)
+
+export const markAllAsReadWithConfirmationIfRequired = createAppAsyncThunk(
+    "entries/entry/markAllAsReadWithConfirmationIfRequired",
+    async (_, thunkApi) => {
+        const state = thunkApi.getState()
+        const source = state.entries.source
+        const entriesTimestamp = state.entries.timestamp ?? Date.now()
+        const markAllAsReadConfirmation = state.user.settings?.markAllAsReadConfirmation
+        const markAllAsReadNavigateToNextUnread = state.user.settings?.markAllAsReadNavigateToNextUnread
+
+        if (markAllAsReadConfirmation) {
+            thunkApi.dispatch(setMarkAllAsReadConfirmationDialogOpen(true))
+        } else {
+            await thunkApi.dispatch(
+                markAllEntries({
+                    sourceType: source.type,
+                    req: {
+                        id: source.id,
+                        read: true,
+                        olderThan: Date.now(),
+                        insertedBefore: entriesTimestamp,
+                    },
+                })
+            )
+            const isAllCategorySelected = source.type === "category" && source.id === Constants.categories.all.id
+            if (markAllAsReadNavigateToNextUnread && !isAllCategorySelected)
+                await thunkApi.dispatch(selectNextUnreadTreeItem({ direction: "forward" }))
+        }
     }
 )
 
@@ -204,7 +240,7 @@ export const selectEntry = createAppAsyncThunk(
 )
 
 const scrollToEntry = (entryElement: HTMLElement, margin: number, scrollSpeed: number | undefined, onScrollEnded: () => void) => {
-    const header = document.getElementById(Constants.dom.headerId)?.getBoundingClientRect()
+    const header = document.getElementsByTagName("header").item(0)?.getBoundingClientRect()
     const offset = (header?.bottom ?? 0) + margin
     scrollToWithCallback({
         options: {

@@ -1,16 +1,16 @@
 import { Trans } from "@lingui/react/macro"
 import { Group } from "@mantine/core"
-import { Constants } from "app/constants"
-import { markEntriesUpToEntry, markEntry, starEntry } from "app/entries/thunks"
-import { redirectToFeed } from "app/redirect/thunks"
-import { useAppDispatch, useAppSelector } from "app/store"
-import type { Entry } from "app/types"
-import { truncate } from "app/utils"
-import { useBrowserExtension } from "hooks/useBrowserExtension"
-import { useColorScheme } from "hooks/useColorScheme"
 import { Item, Menu, Separator } from "react-contexify"
 import { TbArrowBarToDown, TbExternalLink, TbMail, TbMailOpened, TbRss, TbStar, TbStarOff } from "react-icons/tb"
-import { tss } from "tss"
+import { Constants } from "@/app/constants"
+import { markEntriesUpToEntry, markEntry, starEntry } from "@/app/entries/thunks"
+import { redirectToFeed } from "@/app/redirect/thunks"
+import { useAppDispatch, useAppSelector } from "@/app/store"
+import type { Entry } from "@/app/types"
+import { truncate } from "@/app/utils"
+import { useBrowserExtension } from "@/hooks/useBrowserExtension"
+import { useColorScheme } from "@/hooks/useColorScheme"
+import { tss } from "@/tss"
 
 interface FeedEntryContextMenuProps {
     entry: Entry
@@ -27,7 +27,7 @@ const useStyles = tss.create(({ theme, colorScheme }) => ({
     },
 }))
 
-export function FeedEntryContextMenu(props: FeedEntryContextMenuProps) {
+export function FeedEntryContextMenu(props: Readonly<FeedEntryContextMenuProps>) {
     const colorScheme = useColorScheme()
     const { classes } = useStyles()
     const sourceType = useAppSelector(state => state.entries.source.type)

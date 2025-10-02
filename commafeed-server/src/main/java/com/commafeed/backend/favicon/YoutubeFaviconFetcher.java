@@ -32,6 +32,8 @@ import lombok.extern.slf4j.Slf4j;
 @Singleton
 public class YoutubeFaviconFetcher extends AbstractFaviconFetcher {
 
+	private static final String PART_SNIPPET = "snippet";
+
 	private static final JsonPointer CHANNEL_THUMBNAIL_URL = JsonPointer.compile("/items/0/snippet/thumbnails/default/url");
 	private static final JsonPointer PLAYLIST_CHANNEL_ID = JsonPointer.compile("/items/0/snippet/channelId");
 
@@ -83,10 +85,10 @@ public class YoutubeFaviconFetcher extends AbstractFaviconFetcher {
 			}
 
 			HttpResult iconResult = getter.get(thumbnailUrl.asText());
-			bytes = iconResult.getContent();
-			contentType = iconResult.getContentType();
+			bytes = iconResult.content();
+			contentType = iconResult.contentType();
 		} catch (Exception e) {
-			log.error("Failed to retrieve YouTube icon", e);
+			log.debug("Failed to retrieve YouTube icon", e);
 		}
 
 		if (!isValidIconResponse(bytes, contentType)) {
@@ -98,35 +100,35 @@ public class YoutubeFaviconFetcher extends AbstractFaviconFetcher {
 	private byte[] fetchForUser(String googleAuthKey, String userId)
 			throws IOException, NotModifiedException, TooManyRequestsException, HostNotAllowedException, SchemeNotAllowedException {
 		URI uri = UriBuilder.fromUri("https://www.googleapis.com/youtube/v3/channels")
-				.queryParam("part", "snippet")
+				.queryParam("part", PART_SNIPPET)
 				.queryParam("key", googleAuthKey)
 				.queryParam("forUsername", userId)
 				.build();
-		return getter.get(uri.toString()).getContent();
+		return getter.get(uri.toString()).content();
 	}
 
 	private byte[] fetchForChannel(String googleAuthKey, String channelId)
 			throws IOException, NotModifiedException, TooManyRequestsException, HostNotAllowedException, SchemeNotAllowedException {
 		URI uri = UriBuilder.fromUri("https://www.googleapis.com/youtube/v3/channels")
-				.queryParam("part", "snippet")
+				.queryParam("part", PART_SNIPPET)
 				.queryParam("key", googleAuthKey)
 				.queryParam("id", channelId)
 				.build();
-		return getter.get(uri.toString()).getContent();
+		return getter.get(uri.toString()).content();
 	}
 
 	private byte[] fetchForPlaylist(String googleAuthKey, String playlistId)
 			throws IOException, NotModifiedException, TooManyRequestsException, HostNotAllowedException, SchemeNotAllowedException {
 		URI uri = UriBuilder.fromUri("https://www.googleapis.com/youtube/v3/playlists")
-				.queryParam("part", "snippet")
+				.queryParam("part", PART_SNIPPET)
 				.queryParam("key", googleAuthKey)
 				.queryParam("id", playlistId)
 				.build();
-		byte[] playlistBytes = getter.get(uri.toString()).getContent();
+		byte[] playlistBytes = getter.get(uri.toString()).content();
 
 		JsonNode channelId = objectMapper.readTree(playlistBytes).at(PLAYLIST_CHANNEL_ID);
 		if (channelId.isMissingNode()) {
-			return null;
+			return new byte[0];
 		}
 
 		return fetchForChannel(googleAuthKey, channelId.asText());

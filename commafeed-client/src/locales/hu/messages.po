@@ -18,7 +18,7 @@ msgid "<0>CommaFeed is an open-source project. Sources are hosted on </0><1>GitH
 msgstr ""
 
 #: src/pages/app/FeedDetailsPage.tsx
-msgid "<0>Complete syntax is available </0><1>here</1>."
+msgid "<0>Complete syntax is available </0><1>here</1><2>.</2>"
 msgstr ""
 
 #: src/pages/auth/RegistrationPage.tsx
@@ -33,8 +33,8 @@ msgstr ""
 msgid "<0>Need an account?</0><1>Sign up!</1>"
 msgstr "<0>Fiókra van szüksége?</0><1>Regisztráljon!</1>"
 
-#: src/pages/app/AboutPage.tsx
 #: src/components/header/ProfileMenu.tsx
+#: src/pages/app/AboutPage.tsx
 msgid "About"
 msgstr "Kb"
 
@@ -54,15 +54,17 @@ msgstr "Kategória hozzáadása"
 msgid "Add user"
 msgstr "Felhasználó hozzáadása"
 
-#: src/pages/admin/AdminUsersPage.tsx
-#: src/components/header/ProfileMenu.tsx
 #: src/components/admin/UserEdit.tsx
+#: src/components/header/ProfileMenu.tsx
+#: src/pages/admin/AdminUsersPage.tsx
 msgid "Admin"
 msgstr ""
 
-#: src/components/sidebar/Tree.tsx
-#: src/components/header/Header.tsx
 #: src/components/content/add/CategorySelect.tsx
+#: src/components/header/Header.tsx
+#: src/components/sidebar/Tree.tsx
+#: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedEntriesPage.tsx
 msgid "All"
 msgstr "Mind"
 
@@ -103,11 +105,11 @@ msgstr "Biztosan törölni szeretné a(z) <0>{userName}</0> felhasználót?"
 msgid "Are you sure you want to delete your account? There's no turning back!"
 msgstr "Biztosan törli a fiókját? "
 
-#: src/components/header/MarkAllAsReadButton.tsx
+#: src/components/MarkAllAsReadConfirmationDialog.tsx
 msgid "Are you sure you want to mark all entries of <0>{sourceLabel}</0> as read?"
 msgstr "Biztosan olvasottként szeretné megjelölni a(z) <0>{sourceLabel}</0> összes bejegyzését?"
 
-#: src/components/header/MarkAllAsReadButton.tsx
+#: src/components/MarkAllAsReadConfirmationDialog.tsx
 msgid "Are you sure you want to mark entries older than {threshold} days of <0>{sourceLabel}</0> as read?"
 msgstr "Biztosan olvasottként szeretné megjelölni a(z) <0>{sourceLabel}</0> {threshold} napjánál régebbi bejegyzéseket?"
 
@@ -131,6 +133,10 @@ msgstr "Vissza"
 msgid "Back to log in"
 msgstr "Vissza a bejelentkezéshez"
 
+#: src/components/settings/DisplaySettings.tsx
+msgid "Blue"
+msgstr ""
+
 #: src/components/KeyboardShortcutsHelp.tsx
 msgid "Browser extension required for Chrome"
 msgstr ""
@@ -143,27 +149,27 @@ msgstr ""
 msgid "Browser tab"
 msgstr ""
 
-#: src/pages/app/TagDetailsPage.tsx
-#: src/pages/app/FeedDetailsPage.tsx
-#: src/pages/app/FeedDetailsPage.tsx
-#: src/pages/app/CategoryDetailsPage.tsx
-#: src/pages/app/CategoryDetailsPage.tsx
-#: src/pages/admin/AdminUsersPage.tsx
-#: src/components/settings/ProfileSettings.tsx
-#: src/components/settings/ProfileSettings.tsx
-#: src/components/settings/CustomCodeSettings.tsx
-#: src/components/header/MarkAllAsReadButton.tsx
-#: src/components/content/add/ImportOpml.tsx
-#: src/components/content/add/AddCategory.tsx
 #: src/components/admin/UserEdit.tsx
+#: src/components/content/add/AddCategory.tsx
+#: src/components/content/add/ImportOpml.tsx
+#: src/components/MarkAllAsReadConfirmationDialog.tsx
+#: src/components/settings/CustomCodeSettings.tsx
+#: src/components/settings/ProfileSettings.tsx
+#: src/components/settings/ProfileSettings.tsx
+#: src/pages/admin/AdminUsersPage.tsx
+#: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
+#: src/pages/app/TagDetailsPage.tsx
 msgid "Cancel"
 msgstr "Mégse"
 
-#: src/pages/app/FeedDetailsPage.tsx
-#: src/pages/app/AboutPage.tsx
+#: src/components/content/add/AddCategory.tsx
+#: src/components/content/add/AddCategory.tsx
 #: src/components/content/add/Subscribe.tsx
-#: src/components/content/add/AddCategory.tsx
-#: src/components/content/add/AddCategory.tsx
+#: src/pages/app/AboutPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
 msgid "Category"
 msgstr "Kategória"
 
@@ -203,11 +209,11 @@ msgstr ""
 msgid "Compact"
 msgstr "Kompakt"
 
-#: src/pages/app/FeedDetailsPage.tsx
-#: src/pages/app/CategoryDetailsPage.tsx
-#: src/pages/admin/AdminUsersPage.tsx
+#: src/components/MarkAllAsReadConfirmationDialog.tsx
 #: src/components/settings/ProfileSettings.tsx
-#: src/components/header/MarkAllAsReadButton.tsx
+#: src/pages/admin/AdminUsersPage.tsx
+#: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
 msgid "Confirm"
 msgstr "Erősítse meg"
 
@@ -239,7 +245,12 @@ msgstr ""
 msgid "Custom JS code that will be executed on page load"
 msgstr ""
 
+#: src/components/settings/DisplaySettings.tsx
+msgid "Cyan"
+msgstr ""
+
 #: src/components/header/ProfileMenu.tsx
+#: src/components/settings/DisplaySettings.tsx
 msgid "Dark"
 msgstr ""
 
@@ -272,13 +283,14 @@ msgstr ""
 msgid "Detailed"
 msgstr ""
 
-#: src/pages/app/SettingsPage.tsx
 #: src/components/header/ProfileMenu.tsx
+#: src/components/settings/DisplaySettings.tsx
+#: src/pages/app/SettingsPage.tsx
 msgid "Display"
 msgstr "Kijelző"
 
-#: src/pages/app/DonatePage.tsx
 #: src/components/header/ProfileMenu.tsx
+#: src/pages/app/DonatePage.tsx
 msgid "Donate"
 msgstr ""
 
@@ -290,11 +302,11 @@ msgstr "Letöltés"
 msgid "Drag link to bookmark bar"
 msgstr "Húzza a hivatkozást a könyvjelzősávra"
 
-#: src/pages/auth/PasswordRecoveryPage.tsx
-#: src/pages/auth/PasswordRecoveryPage.tsx
-#: src/pages/admin/AdminUsersPage.tsx
-#: src/components/settings/ProfileSettings.tsx
 #: src/components/admin/UserEdit.tsx
+#: src/components/settings/ProfileSettings.tsx
+#: src/pages/admin/AdminUsersPage.tsx
+#: src/pages/auth/PasswordRecoveryPage.tsx
+#: src/pages/auth/PasswordRecoveryPage.tsx
 msgid "E-mail"
 msgstr ""
 
@@ -307,8 +319,8 @@ msgstr "E-mail cím"
 msgid "Edit user"
 msgstr "Felhasználó szerkesztése"
 
-#: src/pages/admin/AdminUsersPage.tsx
 #: src/components/admin/UserEdit.tsx
+#: src/pages/admin/AdminUsersPage.tsx
 msgid "Enabled"
 msgstr "Engedélyezve"
 
@@ -344,8 +356,8 @@ msgstr "Kiterjesztve"
 msgid "Export your subscriptions and categories as an OPML file that can be imported in other feed reading services"
 msgstr "Exportálja előfizetéseit és kategóriáit OPML-fájlként, amely importálható más feedolvasó szolgáltatásokba"
 
-#: src/pages/WelcomePage.tsx
 #: src/components/header/Header.tsx
+#: src/pages/WelcomePage.tsx
 msgid "Extension options"
 msgstr ""
 
@@ -353,9 +365,9 @@ msgstr ""
 msgid "Feed name"
 msgstr "Hírcsatorna neve"
 
+#: src/components/content/add/Subscribe.tsx
+#: src/components/content/add/Subscribe.tsx
 #: src/pages/app/FeedDetailsPage.tsx
-#: src/components/content/add/Subscribe.tsx
-#: src/components/content/add/Subscribe.tsx
 msgid "Feed URL"
 msgstr ""
 
@@ -376,6 +388,10 @@ msgid "Filtering expression"
 msgstr "Szűrő kifejezés"
 
 #: src/components/header/ProfileMenu.tsx
+msgid "Font size"
+msgstr ""
+
+#: src/components/header/ProfileMenu.tsx
 msgid "Force fetching feeds is not yet available."
 msgstr ""
 
@@ -383,9 +399,9 @@ msgstr ""
 msgid "Forgot password?"
 msgstr "Elfelejtette a jelszavát?"
 
-#: src/pages/app/TagDetailsPage.tsx
-#: src/pages/app/FeedDetailsPage.tsx
 #: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
+#: src/pages/app/TagDetailsPage.tsx
 msgid "Generate an API key in your profile first."
 msgstr "Először generáljon API-kulcsot a profiljában."
 
@@ -393,9 +409,9 @@ msgstr "Először generáljon API-kulcsot a profiljában."
 msgid "Generate new API key"
 msgstr "Új API-kulcs létrehozása"
 
-#: src/pages/app/TagDetailsPage.tsx
-#: src/pages/app/FeedDetailsPage.tsx
 #: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
+#: src/pages/app/TagDetailsPage.tsx
 msgid "Generated feed url"
 msgstr "Hírcsatorna generált URL-je"
 
@@ -415,6 +431,18 @@ msgstr "Nyissa meg az API dokumentációját."
 #: src/pages/app/AboutPage.tsx
 msgid "Goodies"
 msgstr "Jók"
+
+#: src/components/settings/DisplaySettings.tsx
+msgid "Grape"
+msgstr ""
+
+#: src/components/settings/DisplaySettings.tsx
+msgid "Gray"
+msgstr ""
+
+#: src/components/settings/DisplaySettings.tsx
+msgid "Green"
+msgstr ""
 
 #: src/pages/admin/AdminUsersPage.tsx
 msgid "Id"
@@ -440,13 +468,17 @@ msgstr "Importálás"
 msgid "In expanded view, scrolling through entries mark them as read"
 msgstr "Kibontott nézetben a bejegyzések görgetése olvasottként jelöli meg őket"
 
-#: src/components/content/FeedEntryFooter.tsx
+#: src/components/settings/DisplaySettings.tsx
+msgid "Indigo"
+msgstr ""
+
 #: src/components/content/FeedEntryContextMenu.tsx
+#: src/components/content/FeedEntryFooter.tsx
 msgid "Keep unread"
 msgstr "Olvasatlan marad"
 
-#: src/pages/app/AboutPage.tsx
 #: src/components/content/FeedEntries.tsx
+#: src/pages/app/AboutPage.tsx
 msgid "Keyboard shortcuts"
 msgstr "Billentyűparancsok"
 
@@ -470,10 +502,18 @@ msgstr "Utolsó frissítési üzenet"
 msgid "Light"
 msgstr ""
 
-#: src/pages/app/TagDetailsPage.tsx
-#: src/pages/app/FeedDetailsPage.tsx
+#: src/components/settings/DisplaySettings.tsx
+msgid "Lime"
+msgstr ""
+
 #: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
+#: src/pages/app/TagDetailsPage.tsx
 msgid "Link"
+msgstr ""
+
+#: src/components/settings/CustomCodeSettings.tsx
+msgid "Link to the documentation"
 msgstr ""
 
 #: src/hooks/useAppLoading.ts
@@ -492,9 +532,9 @@ msgstr "Előfizetések betöltése..."
 msgid "Loading tags..."
 msgstr "Címkék betöltése..."
 
+#: src/pages/auth/LoginPage.tsx
+#: src/pages/auth/LoginPage.tsx
 #: src/pages/WelcomePage.tsx
-#: src/pages/auth/LoginPage.tsx
-#: src/pages/auth/LoginPage.tsx
 msgid "Log in"
 msgstr "Jelentkezzen be"
 
@@ -506,27 +546,27 @@ msgstr "Kijelentkezés"
 msgid "Long press"
 msgstr ""
 
-#: src/pages/admin/AdminUsersPage.tsx
 #: src/components/header/ProfileMenu.tsx
+#: src/pages/admin/AdminUsersPage.tsx
 msgid "Manage users"
 msgstr "Felhasználók kezelése"
 
-#: src/components/header/MarkAllAsReadButton.tsx
+#: src/components/header/Header.tsx
 msgid "Mark all as read"
 msgstr "Minden megjelölése olvasottként"
 
 #: src/components/KeyboardShortcutsHelp.tsx
-#: src/components/header/MarkAllAsReadButton.tsx
+#: src/components/MarkAllAsReadConfirmationDialog.tsx
 msgid "Mark all entries as read"
 msgstr "Minden bejegyzés megjelölése olvasottként"
 
-#: src/components/content/FeedEntryFooter.tsx
 #: src/components/content/FeedEntryContextMenu.tsx
+#: src/components/content/FeedEntryFooter.tsx
 msgid "Mark as read"
 msgstr "Megjelölés olvasottként"
 
-#: src/components/content/FeedEntryFooter.tsx
 #: src/components/content/FeedEntryContextMenu.tsx
+#: src/components/content/FeedEntryFooter.tsx
 msgid "Mark as read up to here"
 msgstr "Megjelölés idáig olvasottként"
 
@@ -546,21 +586,25 @@ msgstr "Mozgassa le az oldalt"
 msgid "Move the page up"
 msgstr "Mozgassa felfelé az oldalt"
 
-#: src/pages/app/FeedDetailsPage.tsx
 #: src/components/RelativeDate.tsx
+#: src/pages/app/FeedDetailsPage.tsx
 msgid "N/A"
 msgstr ""
 
-#: src/pages/app/FeedDetailsPage.tsx
-#: src/pages/app/CategoryDetailsPage.tsx
-#: src/pages/admin/AdminUsersPage.tsx
 #: src/components/admin/UserEdit.tsx
+#: src/pages/admin/AdminUsersPage.tsx
+#: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
 msgid "Name"
 msgstr "Név"
 
 #: src/components/KeyboardShortcutsHelp.tsx
 msgid "Navigate to a subscription by entering its name"
 msgstr "Navigáljon egy előfizetéshez a nevének megadásával"
+
+#: src/components/settings/DisplaySettings.tsx
+msgid "Navigate to the next category/feed with unread entries when marking all entries as read"
+msgstr ""
 
 #: src/components/settings/DisplaySettings.tsx
 #: src/components/settings/DisplaySettings.tsx
@@ -575,8 +619,8 @@ msgstr "Új jelszó"
 msgid "Newest first"
 msgstr "A legújabbak először"
 
-#: src/components/header/Header.tsx
 #: src/components/content/add/Subscribe.tsx
+#: src/components/header/Header.tsx
 msgid "Next"
 msgstr "Következő"
 
@@ -682,6 +726,10 @@ msgstr "OPML fájl"
 msgid "OPML file is required"
 msgstr ""
 
+#: src/components/settings/DisplaySettings.tsx
+msgid "Orange"
+msgstr ""
+
 #: src/pages/app/AboutPage.tsx
 msgid "Order"
 msgstr "Rendelés"
@@ -694,11 +742,11 @@ msgstr "Szülő"
 msgid "Parent Category"
 msgstr "Szülő kategória"
 
-#: src/pages/auth/RegistrationPage.tsx
-#: src/pages/auth/RegistrationPage.tsx
-#: src/pages/auth/LoginPage.tsx
-#: src/pages/auth/LoginPage.tsx
 #: src/components/admin/UserEdit.tsx
+#: src/pages/auth/LoginPage.tsx
+#: src/pages/auth/LoginPage.tsx
+#: src/pages/auth/RegistrationPage.tsx
+#: src/pages/auth/RegistrationPage.tsx
 msgid "Password"
 msgstr "Jelszó"
 
@@ -710,13 +758,21 @@ msgstr "Jelszó helyreállítás"
 msgid "Passwords do not match"
 msgstr "A jelszavak nem egyeznek"
 
-#: src/pages/app/FeedDetailsPage.tsx
+#: src/components/settings/DisplaySettings.tsx
+msgid "Pink"
+msgstr ""
+
 #: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
 msgid "Position"
 msgstr "Pozíció"
 
 #: src/components/header/Header.tsx
 msgid "Previous"
+msgstr ""
+
+#: src/components/settings/DisplaySettings.tsx
+msgid "Primary color"
 msgstr ""
 
 #: src/pages/app/SettingsPage.tsx
@@ -727,8 +783,12 @@ msgstr "Profil"
 msgid "Recover password"
 msgstr "Jelszó helyreállítása"
 
-#: src/components/KeyboardShortcutsHelp.tsx
+#: src/components/settings/DisplaySettings.tsx
+msgid "Red"
+msgstr ""
+
 #: src/components/header/Header.tsx
+#: src/components/KeyboardShortcutsHelp.tsx
 msgid "Refresh"
 msgstr "Frissítés"
 
@@ -745,11 +805,11 @@ msgstr ""
 msgid "Right click"
 msgstr ""
 
-#: src/pages/app/FeedDetailsPage.tsx
-#: src/pages/app/CategoryDetailsPage.tsx
-#: src/components/settings/ProfileSettings.tsx
-#: src/components/settings/CustomCodeSettings.tsx
 #: src/components/admin/UserEdit.tsx
+#: src/components/settings/CustomCodeSettings.tsx
+#: src/components/settings/ProfileSettings.tsx
+#: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedDetailsPage.tsx
 msgid "Save"
 msgstr "Mentés"
 
@@ -765,16 +825,12 @@ msgstr "Sima görgetés, amikor a bejegyzések között navigál"
 msgid "Scrolling"
 msgstr ""
 
-#: src/components/sidebar/TreeSearch.tsx
-#: src/components/sidebar/TreeSearch.tsx
 #: src/components/header/Header.tsx
 #: src/components/header/Header.tsx
+#: src/components/sidebar/TreeSearch.tsx
+#: src/components/sidebar/TreeSearch.tsx
 msgid "Search"
 msgstr "Keresés"
-
-#: src/components/header/Header.tsx
-msgid "Search requires at least 3 characters"
-msgstr "A kereséshez legalább 3 karakter szükséges"
 
 #: src/components/KeyboardShortcutsHelp.tsx
 msgid "Select next unread feed/category"
@@ -858,9 +914,9 @@ msgstr ""
 msgid "Show unread count in tab title"
 msgstr ""
 
+#: src/pages/auth/RegistrationPage.tsx
+#: src/pages/auth/RegistrationPage.tsx
 #: src/pages/WelcomePage.tsx
-#: src/pages/auth/RegistrationPage.tsx
-#: src/pages/auth/RegistrationPage.tsx
 msgid "Sign up"
 msgstr "Regisztráljon"
 
@@ -873,20 +929,21 @@ msgstr "Valami rossz történt..."
 msgid "Space"
 msgstr ""
 
-#: src/components/content/FeedEntryFooter.tsx
 #: src/components/content/FeedEntryContextMenu.tsx
+#: src/components/content/FeedEntryFooter.tsx
 #: src/components/content/header/Star.tsx
 msgid "Star"
 msgstr "Csillag"
 
-#: src/pages/app/CategoryDetailsPage.tsx
 #: src/components/sidebar/Tree.tsx
+#: src/pages/app/CategoryDetailsPage.tsx
+#: src/pages/app/FeedEntriesPage.tsx
 msgid "Starred"
 msgstr "Csillaggal megjelölve"
 
+#: src/components/content/add/Subscribe.tsx
+#: src/components/content/add/Subscribe.tsx
 #: src/pages/app/AddPage.tsx
-#: src/components/content/add/Subscribe.tsx
-#: src/components/content/add/Subscribe.tsx
 msgid "Subscribe"
 msgstr "Feliratkozás"
 
@@ -922,6 +979,10 @@ msgstr ""
 #: src/components/content/FeedEntryFooter.tsx
 msgid "Tags"
 msgstr "Címkék"
+
+#: src/components/settings/DisplaySettings.tsx
+msgid "Teal"
+msgstr ""
 
 #: src/components/content/add/Subscribe.tsx
 msgid "The URL for the feed you want to subscribe to. You can also use the website's url directly and CommaFeed will try to find the feed in the page."
@@ -959,8 +1020,8 @@ msgstr ""
 msgid "Unread"
 msgstr "Olvasatlan"
 
-#: src/components/content/FeedEntryFooter.tsx
 #: src/components/content/FeedEntryContextMenu.tsx
+#: src/components/content/FeedEntryFooter.tsx
 #: src/components/content/header/Star.tsx
 msgid "Unstar"
 msgstr ""
@@ -979,6 +1040,10 @@ msgstr "Felhasználónév"
 msgid "User Name or E-mail"
 msgstr "Felhasználói név vagy e-mail cím"
 
+#: src/components/settings/DisplaySettings.tsx
+msgid "Violet"
+msgstr ""
+
 #: src/components/Alert.tsx
 msgid "Warning"
 msgstr "Figyelem"
@@ -986,6 +1051,10 @@ msgstr "Figyelem"
 #: src/pages/app/FeedDetailsPage.tsx
 msgid "Website"
 msgstr "Webhely"
+
+#: src/components/settings/DisplaySettings.tsx
+msgid "Yellow"
+msgstr ""
 
 #: src/pages/app/FeedEntriesPage.tsx
 msgid "You don't have any subscriptions yet. Why not try adding one by clicking on the + sign at the top of the page?"

@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 
-import com.commafeed.backend.feed.FeedUtils;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -27,7 +27,14 @@ import lombok.Setter;
 public class FeedEntryContent extends AbstractModel {
 
 	public enum Direction {
-		ltr, rtl, unknown
+		@JsonProperty("ltr")
+		LTR,
+
+		@JsonProperty("rtl")
+		RTL,
+
+		@JsonProperty("unknown")
+		UNKNOWN
 	}
 
 	@Column(length = 2048)
@@ -69,7 +76,7 @@ public class FeedEntryContent extends AbstractModel {
 
 	@Column
 	@Enumerated(EnumType.STRING)
-	private Direction direction = Direction.unknown;
+	private Direction direction = Direction.UNKNOWN;
 
 	@OneToMany(mappedBy = "content")
 	private Set<FeedEntry> entries;
@@ -90,16 +97,5 @@ public class FeedEntryContent extends AbstractModel {
 				.append(mediaThumbnailWidth, c.mediaThumbnailWidth)
 				.append(mediaThumbnailHeight, c.mediaThumbnailHeight)
 				.build();
-	}
-
-	public boolean isRTL() {
-		if (direction == Direction.rtl) {
-			return true;
-		} else if (direction == Direction.ltr) {
-			return false;
-		} else {
-			// detect on the fly for content that was inserted before the direction field was added
-			return FeedUtils.isRTL(title, content);
-		}
 	}
 }

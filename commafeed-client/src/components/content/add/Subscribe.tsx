@@ -1,16 +1,16 @@
 import { Trans } from "@lingui/react/macro"
 import { Box, Button, Group, Stack, Stepper, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
-import { client, errorToStrings } from "app/client"
-import { Constants } from "app/constants"
-import { redirectToFeed, redirectToSelectedSource } from "app/redirect/thunks"
-import { useAppDispatch } from "app/store"
-import { reloadTree } from "app/tree/thunks"
-import type { FeedInfoRequest, SubscribeRequest } from "app/types"
-import { Alert } from "components/Alert"
 import { useState } from "react"
 import { useAsyncCallback } from "react-async-hook"
 import { TbRss } from "react-icons/tb"
+import { client, errorToStrings } from "@/app/client"
+import { Constants } from "@/app/constants"
+import { redirectToFeed, redirectToSelectedSource } from "@/app/redirect/thunks"
+import { useAppDispatch } from "@/app/store"
+import { reloadTree } from "@/app/tree/thunks"
+import type { FeedInfoRequest, SubscribeRequest } from "@/app/types"
+import { Alert } from "@/components/Alert"
 import { CategorySelect } from "./CategorySelect"
 
 export function Subscribe() {
@@ -39,9 +39,8 @@ export function Subscribe() {
         },
     })
     const subscribe = useAsyncCallback(client.feed.subscribe, {
-        onSuccess: async sub => {
-            await dispatch(reloadTree())
-            dispatch(redirectToFeed(sub.data))
+        onSuccess: sub => {
+            dispatch(reloadTree()).then(() => dispatch(redirectToFeed(sub.data)))
         },
     })
 

@@ -2,9 +2,9 @@ import type { MessageDescriptor } from "@lingui/core"
 import { useLingui } from "@lingui/react"
 import { ActionIcon, Box, Button, type ButtonVariant, Tooltip, useMantineTheme } from "@mantine/core"
 import type { ActionIconVariant } from "@mantine/core/lib/components/ActionIcon/ActionIcon"
-import { Constants } from "app/constants"
-import { useActionButton } from "hooks/useActionButton"
-import { type MouseEventHandler, type ReactNode, forwardRef } from "react"
+import { forwardRef, type MouseEventHandler, type ReactNode } from "react"
+import { Constants } from "@/app/constants"
+import { useActionButton } from "@/hooks/useActionButton"
 
 interface ActionButtonProps {
     icon: ReactNode
@@ -29,7 +29,7 @@ export const ActionButton = forwardRef<HTMLDivElement, ActionButtonProps>((props
     const iconOnly = (mobile && !props.showLabelOnMobile) || (!mobile && props.hideLabelOnDesktop)
 
     return (
-        <Box ref={ref}>
+        <Box ref={ref} className="cf-action-button">
             {iconOnly && (
                 <Tooltip label={label} openDelay={Constants.tooltip.delay}>
                     <ActionIcon

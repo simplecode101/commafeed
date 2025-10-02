@@ -10,7 +10,7 @@ import io.restassured.RestAssured;
 class StaticFilesIT {
 
 	@ParameterizedTest
-	@ValueSource(strings = { "/", "/openapi.json", "/openapi.yaml" })
+	@ValueSource(strings = { "/", "/openapi" })
 	void servedWithoutCache(String path) {
 		RestAssured.given().when().get(path).then().statusCode(200).header("Cache-Control", "no-cache");
 	}
@@ -18,6 +18,6 @@ class StaticFilesIT {
 	@ParameterizedTest
 	@ValueSource(strings = { "/favicon.ico" })
 	void servedWithCache(String path) {
-		RestAssured.given().when().get(path).then().statusCode(200).header("Cache-Control", "public, immutable, max-age=86400");
+		RestAssured.given().when().get(path).then().statusCode(200).header("Cache-Control", "public, immutable, max-age=31536000");
 	}
 }

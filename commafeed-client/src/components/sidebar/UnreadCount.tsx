@@ -1,6 +1,6 @@
-import { Badge, Tooltip } from "@mantine/core"
-import { Constants } from "app/constants"
-import { tss } from "tss"
+import { Badge, Indicator, Tooltip } from "@mantine/core"
+import { Constants } from "@/app/constants"
+import { tss } from "@/tss"
 
 const useStyles = tss.create(() => ({
     badge: {
@@ -10,7 +10,12 @@ const useStyles = tss.create(() => ({
     },
 }))
 
-export function UnreadCount(props: { unreadCount: number }) {
+export function UnreadCount(
+    props: Readonly<{
+        unreadCount: number
+        showIndicator: boolean
+    }>
+) {
     const { classes } = useStyles()
 
     if (props.unreadCount <= 0) return null
@@ -18,9 +23,11 @@ export function UnreadCount(props: { unreadCount: number }) {
     const count = props.unreadCount >= 10000 ? "10k+" : props.unreadCount
     return (
         <Tooltip label={props.unreadCount} disabled={props.unreadCount === count} openDelay={Constants.tooltip.delay}>
-            <Badge className={classes.badge} variant="light" fullWidth>
-                {count}
-            </Badge>
+            <Indicator disabled={!props.showIndicator} size={4} offset={10} position="middle-start">
+                <Badge className={`${classes.badge} cf-badge`} variant="light" fullWidth>
+                    {count}
+                </Badge>
+            </Indicator>
         </Tooltip>
     )
 }

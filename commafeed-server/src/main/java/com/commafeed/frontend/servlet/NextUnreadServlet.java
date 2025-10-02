@@ -13,6 +13,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import com.commafeed.backend.dao.FeedCategoryDAO;
 import com.commafeed.backend.dao.FeedEntryStatusDAO;
@@ -25,7 +26,6 @@ import com.commafeed.backend.model.UserSettings.ReadingOrder;
 import com.commafeed.backend.service.FeedEntryService;
 import com.commafeed.frontend.resource.CategoryREST;
 import com.commafeed.security.AuthenticationContext;
-import com.google.common.collect.Iterables;
 
 import lombok.RequiredArgsConstructor;
 
@@ -43,6 +43,7 @@ public class NextUnreadServlet {
 
 	@GET
 	@Transactional
+	@Operation(hidden = true)
 	public Response get(@QueryParam("category") String categoryId, @QueryParam("order") @DefaultValue("desc") ReadingOrder order) {
 		User user = authenticationContext.getCurrentUser();
 		if (user == null) {
@@ -54,7 +55,7 @@ public class NextUnreadServlet {
 			List<FeedSubscription> subs = feedSubscriptionDAO.findAll(user);
 			List<FeedEntryStatus> statuses = feedEntryStatusDAO.findBySubscriptions(user, subs, true, null, null, 0, 1, order, true, null,
 					null, null);
-			s = Iterables.getFirst(statuses, null);
+			s = statuses.stream().findFirst().orElse(null);
 		} else {
 			FeedCategory category = feedCategoryDAO.findById(user, Long.valueOf(categoryId));
 			if (category != null) {
@@ -62,7 +63,7 @@ public class NextUnreadServlet {
 				List<FeedSubscription> subscriptions = feedSubscriptionDAO.findByCategories(user, children);
 				List<FeedEntryStatus> statuses = feedEntryStatusDAO.findBySubscriptions(user, subscriptions, true, null, null, 0, 1, order,
 						true, null, null, null);
-				s = Iterables.getFirst(statuses, null);
+				s = statuses.stream().findFirst().orElse(null);
 			}
 		}
 		if (s != null) {

@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import jakarta.inject.Singleton;
 
 import com.commafeed.CommaFeedConfiguration;
-import com.commafeed.backend.dao.FeedDAO;
+import com.commafeed.backend.Urls;
 import com.commafeed.backend.dao.FeedEntryStatusDAO;
 import com.commafeed.backend.dao.FeedSubscriptionDAO;
 import com.commafeed.backend.feed.FeedRefreshEngine;
@@ -25,16 +25,14 @@ import lombok.extern.slf4j.Slf4j;
 @Singleton
 public class FeedSubscriptionService {
 
-	private final FeedDAO feedDAO;
 	private final FeedEntryStatusDAO feedEntryStatusDAO;
 	private final FeedSubscriptionDAO feedSubscriptionDAO;
 	private final FeedService feedService;
 	private final FeedRefreshEngine feedRefreshEngine;
 	private final CommaFeedConfiguration config;
 
-	public FeedSubscriptionService(FeedDAO feedDAO, FeedEntryStatusDAO feedEntryStatusDAO, FeedSubscriptionDAO feedSubscriptionDAO,
-			FeedService feedService, FeedRefreshEngine feedRefreshEngine, CommaFeedConfiguration config) {
-		this.feedDAO = feedDAO;
+	public FeedSubscriptionService(FeedEntryStatusDAO feedEntryStatusDAO, FeedSubscriptionDAO feedSubscriptionDAO, FeedService feedService,
+			FeedRefreshEngine feedRefreshEngine, CommaFeedConfiguration config) {
 		this.feedEntryStatusDAO = feedEntryStatusDAO;
 		this.feedSubscriptionDAO = feedSubscriptionDAO;
 		this.feedService = feedService;
@@ -70,9 +68,8 @@ public class FeedSubscriptionService {
 		Feed feed = feedService.findOrCreate(url);
 
 		// upgrade feed to https if it was using http
-		if (FeedUtils.isHttp(feed.getUrl()) && FeedUtils.isHttps(url)) {
+		if (Urls.isHttp(feed.getUrl()) && Urls.isHttps(url)) {
 			feed.setUrl(url);
-			feedDAO.saveOrUpdate(feed);
 		}
 
 		FeedSubscription sub = feedSubscriptionDAO.findByFeed(user, feed);
@@ -84,9 +81,7 @@ public class FeedSubscriptionService {
 		sub.setCategory(category);
 		sub.setPosition(position);
 		sub.setTitle(FeedUtils.truncate(title, 128));
-		feedSubscriptionDAO.saveOrUpdate(sub);
-
-		return sub.getId();
+		return feedSubscriptionDAO.merge(sub).getId();
 	}
 
 	public boolean unsubscribe(User user, Long subId) {
@@ -112,17 +107,6 @@ public class FeedSubscriptionService {
 		}
 
 		user.setLastForceRefresh(Instant.now());
-	}
-
-	public void refreshAllUpForRefresh(User user) {
-		List<FeedSubscription> subs = feedSubscriptionDAO.findAll(user);
-		for (FeedSubscription sub : subs) {
-			Instant disabledUntil = sub.getFeed().getDisabledUntil();
-			if (disabledUntil == null || disabledUntil.isBefore(Instant.now())) {
-				Feed feed = sub.getFeed();
-				feedRefreshEngine.refreshImmediately(feed);
-			}
-		}
 	}
 
 	public Map<Long, UnreadCount> getUnreadCount(User user) {

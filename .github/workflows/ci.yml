@@ -23,13 +23,13 @@ jobs:
     steps:
       # Checkout
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           fetch-depth: 0
 
       # Setup
       - name: Set up GraalVM
-        uses: graalvm/setup-graalvm@01ed653ac833fe80569f1ef9f25585ba2811baab # v1
+        uses: graalvm/setup-graalvm@e140024fdc2d95d3c7e10a636887a91090d29990 # v1
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "graalvm"
@@ -44,18 +44,27 @@ jobs:
         run: mvn --batch-mode --no-transfer-progress install -Pnative -P${{ matrix.database }} -DskipTests=${{ matrix.os == 'windows-latest' && matrix.database != 'h2' }}
 
       # Build pages
-      - name: Copy generated markdown documentation to /documentation
-        run: mkdir documentation && cp ./commafeed-server/target/quarkus-generated-doc/config/commafeed-server.md ./documentation/README.md
+      - name: Create pages directory structure
+        run: mkdir -p target/pages/documentation/custom-css
 
-      - name: Generate pages
-        uses: wranders/markdown-to-pages-action@8d8a750832932ac785f5424c8c5543aa0b26bb9a # v1
+      - name: Convert readme file to html
+        uses: jaywcjlove/markdown-to-html-cli@d2c8ffd676de1801e2586904bc540a938e4bc480 # v5.0.3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          out_path: target/pages
-          files: |-
-            README.md
-            documentation/README.md
-      
+          source: README.md
+          output: target/pages/index.html
+
+      - name: Convert config documentation to html
+        uses: jaywcjlove/markdown-to-html-cli@d2c8ffd676de1801e2586904bc540a938e4bc480 # v5.0.3
+        with:
+          source: commafeed-server/target/quarkus-generated-doc/config/commafeed-server.md
+          output: target/pages/documentation/index.html
+
+      - name: Convert custom css documentation to html
+        uses: jaywcjlove/markdown-to-html-cli@d2c8ffd676de1801e2586904bc540a938e4bc480 # v5.0.3
+        with:
+          source: documentation/CUSTOMCSS.md
+          output: target/pages/documentation/custom-css/index.html
+
       # Upload artifacts
       - name: Upload cross-platform app
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -71,7 +80,7 @@ jobs:
           path: commafeed-server/target/commafeed-*-runner*
 
       - name: Upload pages
-        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         if: matrix.os == 'ubuntu-latest' && matrix.database == 'h2' # we only need to upload the pages once
         with:
           path: target/pages
@@ -89,7 +98,7 @@ jobs:
     steps:
       # Checkout
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           fetch-depth: 0
 
@@ -98,14 +107,14 @@ jobs:
         uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3
 
       - name: Install required packages
         run: sudo apt-get install -y rename unzip
 
       # Prepare artifacts
       - name: Download artifacts
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
         with:
           pattern: commafeed-${{ matrix.database }}-*
           path: ./artifacts
@@ -126,7 +135,7 @@ jobs:
 
       # Docker
       - name: Login to Container Registry
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         if: ${{ env.DOCKERHUB_USERNAME != '' }}
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -134,7 +143,7 @@ jobs:
 
       ## build but don't push for PRs and renovate
       - name: Docker build - native
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
         with:
           context: .
           file: commafeed-server/src/main/docker/Dockerfile.native
@@ -142,7 +151,7 @@ jobs:
           platforms: linux/amd64,linux/arm64/v8
 
       - name: Docker build - jvm
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
         with:
           context: .
           file: commafeed-server/src/main/docker/Dockerfile.jvm
@@ -151,7 +160,7 @@ jobs:
 
       ## build and push tag
       - name: Docker build and push tag - native
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
         if: ${{ github.ref_type == 'tag' }}
         with:
           context: .
@@ -163,7 +172,7 @@ jobs:
             athou/commafeed:${{ github.ref_name }}-${{ matrix.database }}
 
       - name: Docker build and push tag - jvm
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
         if: ${{ github.ref_type == 'tag' }}
         with:
           context: .
@@ -176,7 +185,7 @@ jobs:
 
       ## build and push master
       - name: Docker build and push master - native
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
         if: ${{ github.ref_name == 'master' }}
         with:
           context: .
@@ -186,7 +195,7 @@ jobs:
           tags: athou/commafeed:master-${{ matrix.database }}
 
       - name: Docker build and push master - jvm
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
         if: ${{ github.ref_name == 'master' }}
         with:
           context: .
@@ -206,12 +215,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           fetch-depth: 0
 
       - name: Download artifacts
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
         with:
           pattern: commafeed-*
           path: ./artifacts
@@ -227,7 +236,7 @@ jobs:
           version: ${{ github.ref_name }}
 
       - name: Create GitHub release
-        uses: ncipollo/release-action@440c8c1cb0ed28b9f43e4d1d670870f059653174 # v1
+        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1
         with:
           name: CommaFeed ${{ github.ref_name }}
           body: ${{ steps.changelog_reader.outputs.changes }}
@@ -240,12 +249,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           fetch-depth: 0
 
       - name: Update Docker Hub Description
-        uses: peter-evans/dockerhub-description@432a30c9e07499fd01da9f8a49f0faf9e0ca5b77 # v4
+        uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa # v5
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}

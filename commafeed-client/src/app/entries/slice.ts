@@ -1,7 +1,7 @@
-import { type PayloadAction, createSlice } from "@reduxjs/toolkit"
-import { Constants } from "app/constants"
-import { loadEntries, loadMoreEntries, markAllEntries, markEntry, markMultipleEntries, starEntry, tagEntry } from "app/entries/thunks"
-import type { Entry } from "app/types"
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
+import { Constants } from "@/app/constants"
+import { loadEntries, loadMoreEntries, markAllEntries, markEntry, markMultipleEntries, starEntry, tagEntry } from "@/app/entries/thunks"
+import type { Entry } from "@/app/types"
 
 export type EntrySourceType = "category" | "feed" | "tag"
 
@@ -28,6 +28,7 @@ interface EntriesState {
     loading: boolean
     search?: string
     scrollingToEntry: boolean
+    markAllAsReadConfirmationDialogOpen: boolean
 }
 
 const initialState: EntriesState = {
@@ -41,6 +42,7 @@ const initialState: EntriesState = {
     hasMore: true,
     loading: false,
     scrollingToEntry: false,
+    markAllAsReadConfirmationDialogOpen: false,
 }
 
 export const entriesSlice = createSlice({
@@ -60,6 +62,9 @@ export const entriesSlice = createSlice({
         },
         setSearch: (state, action: PayloadAction<string>) => {
             state.search = action.payload
+        },
+        setMarkAllAsReadConfirmationDialogOpen: (state, action: PayloadAction<boolean>) => {
+            state.markAllAsReadConfirmationDialogOpen = action.payload
         },
     },
     extraReducers: builder => {
@@ -119,4 +124,4 @@ export const entriesSlice = createSlice({
     },
 })
 
-export const { setSearch } = entriesSlice.actions
+export const { setSearch, setMarkAllAsReadConfirmationDialogOpen } = entriesSlice.actions

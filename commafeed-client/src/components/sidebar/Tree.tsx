@@ -1,6 +1,8 @@
 import { Trans } from "@lingui/react/macro"
 import { Box, Stack } from "@mantine/core"
-import { Constants } from "app/constants"
+import React from "react"
+import { TbChevronDown, TbChevronRight, TbInbox, TbStar, TbTag } from "react-icons/tb"
+import { Constants } from "@/app/constants"
 import {
     redirectToCategory,
     redirectToCategoryDetails,
@@ -8,15 +10,14 @@ import {
     redirectToFeedDetails,
     redirectToTag,
     redirectToTagDetails,
-} from "app/redirect/thunks"
-import { useAppDispatch, useAppSelector } from "app/store"
-import { collapseTreeCategory } from "app/tree/thunks"
-import type { Category, Subscription } from "app/types"
-import { categoryUnreadCount, flattenCategoryTree } from "app/utils"
-import { Loader } from "components/Loader"
-import { OnDesktop } from "components/responsive/OnDesktop"
-import React from "react"
-import { TbChevronDown, TbChevronRight, TbInbox, TbStar, TbTag } from "react-icons/tb"
+} from "@/app/redirect/thunks"
+import { useAppDispatch, useAppSelector } from "@/app/store"
+import type { TreeSubscription } from "@/app/tree/slice"
+import { collapseTreeCategory } from "@/app/tree/thunks"
+import type { Category, Subscription } from "@/app/types"
+import { categoryHasNewEntries, categoryUnreadCount, flattenCategoryTree } from "@/app/utils"
+import { Loader } from "@/components/Loader"
+import { OnDesktop } from "@/components/responsive/OnDesktop"
 import { TreeNode } from "./TreeNode"
 import { TreeSearch } from "./TreeSearch"
 
@@ -89,6 +90,7 @@ export function Tree() {
             name={<Trans>All</Trans>}
             icon={allIcon}
             unread={categoryUnreadCount(root)}
+            hasNewEntries={categoryHasNewEntries(root)}
             selected={source.type === "category" && source.id === Constants.categories.all.id}
             expanded={false}
             level={0}
@@ -103,6 +105,7 @@ export function Tree() {
             name={<Trans>Starred</Trans>}
             icon={starredIcon}
             unread={0}
+            hasNewEntries={false}
             selected={source.type === "category" && source.id === Constants.categories.starred.id}
             expanded={false}
             level={0}
@@ -122,6 +125,7 @@ export function Tree() {
                 name={category.name}
                 icon={category.expanded ? expandedIcon : collapsedIcon}
                 unread={categoryUnreadCount(category)}
+                hasNewEntries={categoryHasNewEntries(category)}
                 selected={source.type === "category" && source.id === category.id}
                 expanded={category.expanded}
                 level={level}
@@ -133,7 +137,7 @@ export function Tree() {
         )
     }
 
-    const feedNode = (feed: Subscription, level = 0) => {
+    const feedNode = (feed: TreeSubscription, level = 0) => {
         if (!isFeedDisplayed(feed)) return null
 
         return (
@@ -143,6 +147,7 @@ export function Tree() {
                 name={feed.name}
                 icon={feed.iconUrl}
                 unread={feed.unread}
+                hasNewEntries={!!feed.hasNewEntries}
                 selected={source.type === "feed" && source.id === String(feed.id)}
                 level={level}
                 hasError={feed.errorCount > errorThreshold}
@@ -159,6 +164,7 @@ export function Tree() {
             name={tag}
             icon={tagIcon}
             unread={0}
+            hasNewEntries={false}
             selected={source.type === "tag" && source.id === tag}
             level={0}
             hasError={false}
@@ -182,7 +188,7 @@ export function Tree() {
             <OnDesktop>
                 <TreeSearch feeds={feeds} />
             </OnDesktop>
-            <Box>
+            <Box className="cf-tree">
                 {allCategoryNode()}
                 {starredCategoryNode()}
                 {root.children.map(c => recursiveCategoryNode(c))}

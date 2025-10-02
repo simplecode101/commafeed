@@ -2,18 +2,11 @@ import { msg } from "@lingui/core/macro"
 import { useLingui } from "@lingui/react"
 import { Box, Center, CloseButton, Divider, Group, Indicator, Popover, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
-import { reloadEntries, search, selectNextEntry, selectPreviousEntry } from "app/entries/thunks"
-import { useAppDispatch, useAppSelector } from "app/store"
-import { changeReadingMode, changeReadingOrder } from "app/user/thunks"
-import { ActionButton } from "components/ActionButton"
-import { Loader } from "components/Loader"
-import { useActionButton } from "hooks/useActionButton"
-import { useBrowserExtension } from "hooks/useBrowserExtension"
-import { useMobile } from "hooks/useMobile"
 import { useEffect } from "react"
 import {
     TbArrowDown,
     TbArrowUp,
+    TbChecks,
     TbExternalLink,
     TbEye,
     TbEyeOff,
@@ -24,7 +17,14 @@ import {
     TbSortDescending,
     TbUser,
 } from "react-icons/tb"
-import { MarkAllAsReadButton } from "./MarkAllAsReadButton"
+import { markAllAsReadWithConfirmationIfRequired, reloadEntries, search, selectNextEntry, selectPreviousEntry } from "@/app/entries/thunks"
+import { useAppDispatch, useAppSelector } from "@/app/store"
+import { changeReadingMode, changeReadingOrder } from "@/app/user/thunks"
+import { ActionButton } from "@/components/ActionButton"
+import { Loader } from "@/components/Loader"
+import { useActionButton } from "@/hooks/useActionButton"
+import { useBrowserExtension } from "@/hooks/useBrowserExtension"
+import { useMobile } from "@/hooks/useMobile"
 import { ProfileMenu } from "./ProfileMenu"
 
 function HeaderDivider() {
@@ -42,11 +42,14 @@ function HeaderToolbar(props: { children: React.ReactNode }) {
                 display: "flex",
                 justifyContent: "space-between",
             }}
+            className="cf-toolbar"
         >
             {props.children}
         </Box>
     ) : (
-        <Group gap={spacing}>{props.children}</Group>
+        <Group gap={spacing} className="cf-toolbar">
+            {props.children}
+        </Group>
     )
 }
 
@@ -60,11 +63,7 @@ export function Header() {
     const dispatch = useAppDispatch()
     const { _ } = useLingui()
 
-    const searchForm = useForm<{ search: string }>({
-        validate: {
-            search: value => (value.length > 0 && value.length < 3 ? _(msg`Search requires at least 3 characters`) : null),
-        },
-    })
+    const searchForm = useForm<{ search: string }>()
     const { setValues } = searchForm
 
     useEffect(() => {
@@ -75,7 +74,7 @@ export function Header() {
 
     if (!settings) return <Loader />
     return (
-        <Center>
+        <Center className="cf-toolbar-wrapper">
             <HeaderToolbar>
                 <ActionButton
                     icon={<TbArrowUp size={iconSize} />}
@@ -111,7 +110,11 @@ export function Header() {
                     label={msg`Refresh`}
                     onClick={async () => await dispatch(reloadEntries())}
                 />
-                <MarkAllAsReadButton iconSize={iconSize} />
+                <ActionButton
+                    icon={<TbChecks size={iconSize} />}
+                    label={msg`Mark all as read`}
+                    onClick={() => dispatch(markAllAsReadWithConfirmationIfRequired())}
+                />
 
                 <HeaderDivider />
 

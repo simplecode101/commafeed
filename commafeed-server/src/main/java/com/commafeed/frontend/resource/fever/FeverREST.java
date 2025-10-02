@@ -27,6 +27,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.UriInfo;
 
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.jboss.resteasy.reactive.server.multipart.FormValue;
 import org.jboss.resteasy.reactive.server.multipart.MultipartFormDataInput;
 
@@ -51,7 +52,6 @@ import com.commafeed.frontend.resource.fever.FeverResponse.FeverFeedGroup;
 import com.commafeed.frontend.resource.fever.FeverResponse.FeverGroup;
 import com.commafeed.frontend.resource.fever.FeverResponse.FeverItem;
 
-import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -70,7 +70,6 @@ import lombok.RequiredArgsConstructor;
 @Produces(MediaType.APPLICATION_JSON)
 @RequiredArgsConstructor
 @Singleton
-@Hidden
 public class FeverREST {
 
 	private static final String PATH = "/user/{userId}{optionalTrailingFever : (/fever)?}{optionalTrailingSlash : (/)?}";
@@ -91,6 +90,7 @@ public class FeverREST {
 	@Path(PATH)
 	@POST
 	@Transactional
+	@Operation(hidden = true)
 	public FeverResponse formUrlencoded(@Context UriInfo uri, @PathParam("userId") Long userId, MultivaluedMap<String, String> form) {
 		Map<String, String> params = new HashMap<>();
 		uri.getQueryParameters().forEach((k, v) -> params.put(k, v.get(0)));
@@ -103,6 +103,7 @@ public class FeverREST {
 	@Path(PATH)
 	@POST
 	@Transactional
+	@Operation(hidden = true)
 	public FeverResponse noForm(@Context UriInfo uri, @PathParam("userId") Long userId) {
 		Map<String, String> params = new HashMap<>();
 		uri.getQueryParameters().forEach((k, v) -> params.put(k, v.get(0)));
@@ -114,6 +115,7 @@ public class FeverREST {
 	@Path(PATH)
 	@GET
 	@Transactional
+	@Operation(hidden = true)
 	public FeverResponse get(@Context UriInfo uri, @PathParam("userId") Long userId) {
 		Map<String, String> params = new HashMap<>();
 		uri.getQueryParameters().forEach((k, v) -> params.put(k, v.get(0)));
@@ -126,6 +128,7 @@ public class FeverREST {
 	@Path(PATH)
 	@POST
 	@Transactional
+	@Operation(hidden = true)
 	public FeverResponse formData(@Context UriInfo uri, @PathParam("userId") Long userId, MultipartFormDataInput form) {
 		Map<String, String> params = new HashMap<>();
 		uri.getQueryParameters().forEach((k, v) -> params.put(k, v.get(0)));
@@ -251,12 +254,12 @@ public class FeverREST {
 
 	private List<Long> buildUnreadItemIds(User user, List<FeedSubscription> subscriptions) {
 		List<FeedEntryStatus> statuses = feedEntryStatusDAO.findBySubscriptions(user, subscriptions, true, null, null, 0,
-				UNREAD_ITEM_IDS_BATCH_SIZE, ReadingOrder.desc, false, null, null, null);
+				UNREAD_ITEM_IDS_BATCH_SIZE, ReadingOrder.DESC, false, null, null, null);
 		return statuses.stream().map(s -> s.getEntry().getId()).toList();
 	}
 
 	private List<Long> buildSavedItemIds(User user) {
-		List<FeedEntryStatus> statuses = feedEntryStatusDAO.findStarred(user, null, 0, SAVED_ITEM_IDS_BATCH_SIZE, ReadingOrder.desc, false);
+		List<FeedEntryStatus> statuses = feedEntryStatusDAO.findStarred(user, null, 0, SAVED_ITEM_IDS_BATCH_SIZE, ReadingOrder.DESC, false);
 		return statuses.stream().map(s -> s.getEntry().getId()).toList();
 	}
 
@@ -279,7 +282,7 @@ public class FeverREST {
 
 	private List<FeverItem> buildItems(User user, List<FeedSubscription> subscriptions, Long sinceId, Long maxId) {
 		List<FeedEntryStatus> statuses = feedEntryStatusDAO.findBySubscriptions(user, subscriptions, false, null, null, 0, ITEMS_BATCH_SIZE,
-				ReadingOrder.desc, false, null, sinceId, maxId);
+				ReadingOrder.DESC, false, null, sinceId, maxId);
 		return statuses.stream().map(this::mapStatus).toList();
 	}
 

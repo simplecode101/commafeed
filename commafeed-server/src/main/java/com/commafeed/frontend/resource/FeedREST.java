@@ -29,11 +29,17 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.hc.core5.http.HttpStatus;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.Cache;
 import org.jboss.resteasy.reactive.RestForm;
 
-import com.commafeed.CommaFeedApplication;
 import com.commafeed.CommaFeedConfiguration;
+import com.commafeed.CommaFeedConstants;
 import com.commafeed.backend.dao.FeedCategoryDAO;
 import com.commafeed.backend.dao.FeedEntryStatusDAO;
 import com.commafeed.backend.dao.FeedSubscriptionDAO;
@@ -81,12 +87,6 @@ import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedOutput;
 import com.rometools.rome.io.WireFeedOutput;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -132,10 +132,11 @@ public class FeedREST {
 	@Path("/entries")
 	@GET
 	@Transactional
-	@Operation(
-			summary = "Get feed entries",
-			description = "Get a list of feed entries",
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Entries.class))) })
+	@Operation(summary = "Get feed entries", description = "Get a list of feed entries")
+	@APIResponse(
+			responseCode = "200",
+			content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Entries.class)) })
+	@APIResponse(responseCode = "404", description = "feed not found")
 	public Response getFeedEntries(@Parameter(description = "id of the feed", required = true) @QueryParam("id") String id,
 			@Parameter(
 					description = "all entries or only unread ones",
@@ -144,14 +145,12 @@ public class FeedREST {
 			@Parameter(description = "offset for paging") @DefaultValue("0") @QueryParam("offset") int offset,
 			@Parameter(description = "limit for paging, default 20, maximum 1000") @DefaultValue("20") @QueryParam("limit") int limit,
 			@Parameter(description = "ordering") @QueryParam("order") @DefaultValue("desc") ReadingOrder order, @Parameter(
-					description = "search for keywords in either the title or the content of the entries, separated by spaces, 3 characters minimum") @QueryParam("keywords") String keywords) {
+					description = "search for keywords in either the title or the content of the entries, separated by spaces") @QueryParam("keywords") String keywords) {
 
 		Preconditions.checkNotNull(id);
 		Preconditions.checkNotNull(readType);
 
-		keywords = StringUtils.trimToNull(keywords);
-		Preconditions.checkArgument(keywords == null || StringUtils.length(keywords) >= 3);
-		List<FeedEntryKeyword> entryKeywords = FeedEntryKeyword.fromQueryString(keywords);
+		List<FeedEntryKeyword> entryKeywords = FeedEntryKeyword.fromQueryString(StringUtils.trimToNull(keywords));
 
 		limit = Math.min(limit, 1000);
 		limit = Math.max(0, limit);
@@ -160,7 +159,7 @@ public class FeedREST {
 		entries.setOffset(offset);
 		entries.setLimit(limit);
 
-		boolean unreadOnly = readType == ReadingMode.unread;
+		boolean unreadOnly = readType == ReadingMode.UNREAD;
 
 		Instant newerThanDate = newerThan == null ? null : Instant.ofEpochMilli(newerThan);
 
@@ -190,7 +189,6 @@ public class FeedREST {
 
 		entries.setTimestamp(System.currentTimeMillis());
 		entries.setIgnoredReadStatus(keywords != null);
-		FeedUtils.removeUnwantedFromSearch(entries.getEntries(), entryKeywords);
 		return Response.ok(entries).build();
 	}
 
@@ -207,7 +205,7 @@ public class FeedREST {
 			@Parameter(description = "offset for paging") @DefaultValue("0") @QueryParam("offset") int offset,
 			@Parameter(description = "limit for paging, default 20, maximum 1000") @DefaultValue("20") @QueryParam("limit") int limit,
 			@Parameter(description = "date ordering") @QueryParam("order") @DefaultValue("desc") ReadingOrder order, @Parameter(
-					description = "search for keywords in either the title or the content of the entries, separated by spaces, 3 characters minimum") @QueryParam("keywords") String keywords) {
+					description = "search for keywords in either the title or the content of the entries, separated by spaces") @QueryParam("keywords") String keywords) {
 
 		Response response = getFeedEntries(id, readType, newerThan, offset, limit, order, keywords);
 		if (response.getStatus() != Status.OK.getStatusCode()) {
@@ -220,7 +218,7 @@ public class FeedREST {
 		feed.setTitle("CommaFeed - " + entries.getName());
 		feed.setDescription("CommaFeed - " + entries.getName());
 		feed.setLink(uri.getBaseUri().toString());
-		feed.setEntries(entries.getEntries().stream().map(Entry::asRss).toList());
+		feed.setEntries(entries.getEntries().stream().map(FeedUtils::asRss).toList());
 
 		SyndFeedOutput output = new SyndFeedOutput();
 		StringWriter writer = new StringWriter();
@@ -253,10 +251,11 @@ public class FeedREST {
 	@POST
 	@Path("/fetch")
 	@Transactional
-	@Operation(
-			summary = "Fetch a feed",
-			description = "Fetch a feed by its url",
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = FeedInfo.class))) })
+	@Operation(summary = "Fetch a feed", description = "Fetch a feed by its url")
+	@APIResponse(
+			responseCode = "200",
+			content = { @Content(mediaType = "application/json", schema = @Schema(implementation = FeedInfo.class)) })
+	@APIResponse(responseCode = "404", description = "feed not found")
 	public Response fetchFeed(@Valid @Parameter(description = "feed url", required = true) FeedInfoRequest req) {
 		Preconditions.checkNotNull(req);
 		Preconditions.checkNotNull(req.getUrl());
@@ -286,24 +285,6 @@ public class FeedREST {
 
 	}
 
-	@Path("/refresh")
-	@POST
-	@Transactional
-	@Operation(summary = "Queue a feed for refresh", description = "Manually add a feed to the refresh queue")
-	public Response queueForRefresh(@Parameter(description = "Feed id", required = true) IDRequest req) {
-		Preconditions.checkNotNull(req);
-		Preconditions.checkNotNull(req.getId());
-
-		User user = authenticationContext.getCurrentUser();
-		FeedSubscription sub = feedSubscriptionDAO.findById(user, req.getId());
-		if (sub != null) {
-			Feed feed = sub.getFeed();
-			feedRefreshEngine.refreshImmediately(feed);
-			return Response.ok().build();
-		}
-		return Response.ok(Status.NOT_FOUND).build();
-	}
-
 	@Path("/mark")
 	@POST
 	@Transactional
@@ -329,9 +310,11 @@ public class FeedREST {
 	@GET
 	@Path("/get/{id}")
 	@Transactional
-	@Operation(
-			summary = "get feed",
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Subscription.class))) })
+	@Operation(summary = "get feed")
+	@APIResponse(
+			responseCode = "200",
+			content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Subscription.class)) })
+	@APIResponse(responseCode = "404", description = "feed not found")
 	public Response getFeed(@Parameter(description = "user id", required = true) @PathParam("id") Long id) {
 		Preconditions.checkNotNull(id);
 
@@ -365,10 +348,10 @@ public class FeedREST {
 	@POST
 	@Path("/subscribe")
 	@Transactional
-	@Operation(
-			summary = "Subscribe to a feed",
-			description = "Subscribe to a feed",
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Long.class))) })
+	@Operation(summary = "Subscribe to a feed", description = "Subscribe to a feed")
+	@APIResponse(
+			responseCode = "200",
+			content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Long.class)) })
 	public Response subscribe(@Valid @Parameter(description = "subscription request", required = true) SubscribeRequest req) {
 		Preconditions.checkNotNull(req);
 		Preconditions.checkNotNull(req.getTitle());
@@ -448,7 +431,7 @@ public class FeedREST {
 
 		User user = authenticationContext.getCurrentUser();
 		FeedSubscription subscription = feedSubscriptionDAO.findById(user, req.getId());
-		subscription.setFilter(StringUtils.lowerCase(req.getFilter()));
+		subscription.setFilter(req.getFilter());
 
 		if (StringUtils.isNotBlank(req.getName())) {
 			subscription.setTitle(req.getName());
@@ -478,10 +461,8 @@ public class FeedREST {
 			for (int i = 0; i < subs.size(); i++) {
 				subs.get(i).setPosition(i);
 			}
-			feedSubscriptionDAO.saveOrUpdate(subs);
-		} else {
-			feedSubscriptionDAO.saveOrUpdate(subscription);
 		}
+
 		return Response.ok().build();
 	}
 
@@ -492,7 +473,7 @@ public class FeedREST {
 	@Operation(summary = "OPML import", description = "Import an OPML file, posted as a FORM with the 'file' name")
 	public Response importOpml(@Parameter(description = "ompl file", required = true) @RestForm("file") String opml) {
 		User user = authenticationContext.getCurrentUser();
-		if (CommaFeedApplication.USERNAME_DEMO.equals(user.getName())) {
+		if (CommaFeedConstants.USERNAME_DEMO.equals(user.getName())) {
 			return Response.status(Status.FORBIDDEN).entity("Import is disabled for the demo account").build();
 		}
 		try {

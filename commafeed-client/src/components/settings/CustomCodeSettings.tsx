@@ -1,14 +1,15 @@
 import { Trans } from "@lingui/react/macro"
-import { Box, Button, Group, Stack } from "@mantine/core"
+import { Anchor, Box, Button, Group, Stack } from "@mantine/core"
 import { useForm } from "@mantine/form"
-import { client, errorToStrings } from "app/client"
-import { redirectToSelectedSource } from "app/redirect/thunks"
-import { useAppDispatch, useAppSelector } from "app/store"
-import { Alert } from "components/Alert"
-import { CodeEditor } from "components/code/CodeEditor"
 import { useEffect } from "react"
 import { useAsyncCallback } from "react-async-hook"
 import { TbDeviceFloppy } from "react-icons/tb"
+import { client, errorToStrings } from "@/app/client"
+import { Constants } from "@/app/constants"
+import { redirectToSelectedSource } from "@/app/redirect/thunks"
+import { useAppDispatch, useAppSelector } from "@/app/store"
+import { Alert } from "@/components/Alert"
+import { CodeEditor } from "@/components/code/CodeEditor"
 
 interface FormData {
     customCss: string
@@ -57,13 +58,23 @@ export function CustomCodeSettings() {
             <form onSubmit={form.onSubmit(saveCustomCode.execute)}>
                 <Stack>
                     <CodeEditor
-                        description={<Trans>Custom CSS rules that will be applied</Trans>}
+                        label={<Trans>Custom CSS rules that will be applied</Trans>}
+                        description={
+                            <Anchor
+                                href={Constants.customCssDocumentationUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ fontSize: "inherit" }}
+                            >
+                                <Trans>Link to the documentation</Trans>
+                            </Anchor>
+                        }
                         language="css"
                         {...form.getInputProps("customCss")}
                     />
 
                     <CodeEditor
-                        description={<Trans>Custom JS code that will be executed on page load</Trans>}
+                        label={<Trans>Custom JS code that will be executed on page load</Trans>}
                         language="javascript"
                         {...form.getInputProps("customJs")}
                     />

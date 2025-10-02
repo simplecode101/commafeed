@@ -4,20 +4,20 @@ import { Trans } from "@lingui/react/macro"
 import { Anchor, Box, Button, Code, Container, Divider, Group, Input, NumberInput, Stack, Text, TextInput, Title } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { openConfirmModal } from "@mantine/modals"
-import { client, errorToStrings } from "app/client"
-import { Constants } from "app/constants"
-import { redirectToRootCategory, redirectToSelectedSource } from "app/redirect/thunks"
-import { useAppDispatch, useAppSelector } from "app/store"
-import { reloadTree } from "app/tree/thunks"
-import type { CategoryModificationRequest } from "app/types"
-import { flattenCategoryTree } from "app/utils"
-import { Alert } from "components/Alert"
-import { Loader } from "components/Loader"
-import { CategorySelect } from "components/content/add/CategorySelect"
 import { useEffect } from "react"
 import { useAsync, useAsyncCallback } from "react-async-hook"
 import { TbDeviceFloppy, TbTrash } from "react-icons/tb"
 import { useParams } from "react-router-dom"
+import { client, errorToStrings } from "@/app/client"
+import { Constants } from "@/app/constants"
+import { redirectToRootCategory, redirectToSelectedSource } from "@/app/redirect/thunks"
+import { useAppDispatch, useAppSelector } from "@/app/store"
+import { reloadTree } from "@/app/tree/thunks"
+import type { Category, CategoryModificationRequest } from "@/app/types"
+import { flattenCategoryTree } from "@/app/utils"
+import { Alert } from "@/components/Alert"
+import { CategorySelect } from "@/components/content/add/CategorySelect"
+import { Loader } from "@/components/Loader"
 
 export function CategoryDetailsPage() {
     const { id = Constants.categories.all.id } = useParams()
@@ -27,10 +27,15 @@ export function CategoryDetailsPage() {
     const dispatch = useAppDispatch()
 
     const query = useAsync(async () => await client.category.getRoot(), [])
-    const category =
-        id === Constants.categories.starred.id
-            ? { ...Constants.categories.starred, name: _(msg`Starred`) }
-            : query.result && flattenCategoryTree(query.result.data).find(c => c.id === id)
+
+    let category: Category | undefined
+    if (id === Constants.categories.all.id) {
+        category = { ...Constants.categories.all, name: _(msg`All`) }
+    } else if (id === Constants.categories.starred.id) {
+        category = { ...Constants.categories.starred, name: _(msg`Starred`) }
+    } else {
+        category = query.result && flattenCategoryTree(query.result.data).find(c => c.id === id)
+    }
 
     const form = useForm<CategoryModificationRequest>()
     const { setValues } = form
@@ -61,7 +66,9 @@ export function CategoryDetailsPage() {
             ),
             labels: { confirm: <Trans>Confirm</Trans>, cancel: <Trans>Cancel</Trans> },
             confirmProps: { color: "red" },
-            onConfirm: async () => await deleteCategory.execute({ id: +id }),
+            onConfirm: () => {
+                deleteCategory.execute({ id: +id })
+            },
         })
     }
 

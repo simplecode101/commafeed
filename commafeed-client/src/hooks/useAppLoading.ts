@@ -1,6 +1,6 @@
 import { msg } from "@lingui/core/macro"
 import { useLingui } from "@lingui/react"
-import { useAppSelector } from "app/store"
+import { useAppSelector } from "@/app/store"
 
 interface Step {
     label: string
@@ -8,28 +8,28 @@ interface Step {
 }
 
 export const useAppLoading = () => {
-    const profile = useAppSelector(state => state.user.profile)
-    const settings = useAppSelector(state => state.user.settings)
-    const rootCategory = useAppSelector(state => state.tree.rootCategory)
-    const tags = useAppSelector(state => state.user.tags)
+    const profileLoaded = useAppSelector(state => !!state.user.profile)
+    const settingsLoaded = useAppSelector(state => !!state.user.settings)
+    const rootCategoryLoaded = useAppSelector(state => !!state.tree.rootCategory)
+    const tagsLoaded = useAppSelector(state => !!state.user.tags)
     const { _ } = useLingui()
 
     const steps: Step[] = [
         {
             label: _(msg`Loading settings...`),
-            done: !!settings,
+            done: settingsLoaded,
         },
         {
             label: _(msg`Loading profile...`),
-            done: !!profile,
+            done: profileLoaded,
         },
         {
             label: _(msg`Loading subscriptions...`),
-            done: !!rootCategory,
+            done: rootCategoryLoaded,
         },
         {
             label: _(msg`Loading tags...`),
-            done: !!tags,
+            done: tagsLoaded,
         },
     ]
 

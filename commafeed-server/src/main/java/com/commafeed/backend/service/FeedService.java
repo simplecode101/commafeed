@@ -8,6 +8,7 @@ import java.util.Objects;
 import jakarta.inject.Singleton;
 
 import com.commafeed.backend.Digests;
+import com.commafeed.backend.Urls;
 import com.commafeed.backend.dao.FeedDAO;
 import com.commafeed.backend.favicon.AbstractFaviconFetcher;
 import com.commafeed.backend.favicon.Favicon;
@@ -23,23 +24,17 @@ public class FeedService {
 
 	private final FeedDAO feedDAO;
 	private final List<AbstractFaviconFetcher> faviconFetchers;
-
 	private final Favicon defaultFavicon;
 
-	public FeedService(FeedDAO feedDAO, @All List<AbstractFaviconFetcher> faviconFetchers) {
+	public FeedService(FeedDAO feedDAO, @All List<AbstractFaviconFetcher> faviconFetchers) throws IOException {
 		this.feedDAO = feedDAO;
 		this.faviconFetchers = faviconFetchers;
-
-		try {
-			defaultFavicon = new Favicon(
-					Resources.toByteArray(Objects.requireNonNull(getClass().getResource("/images/default_favicon.gif"))), "image/gif");
-		} catch (IOException e) {
-			throw new RuntimeException("could not load default favicon", e);
-		}
+		this.defaultFavicon = new Favicon(
+				Resources.toByteArray(Objects.requireNonNull(getClass().getResource("/images/default_favicon.gif"))), "image/gif");
 	}
 
 	public synchronized Feed findOrCreate(String url) {
-		String normalizedUrl = FeedUtils.normalizeURL(url);
+		String normalizedUrl = Urls.normalize(url);
 		String normalizedUrlHash = Digests.sha1Hex(normalizedUrl);
 		Feed feed = feedDAO.findByUrl(normalizedUrl, normalizedUrlHash);
 		if (feed == null) {
@@ -54,7 +49,7 @@ public class FeedService {
 	}
 
 	public void update(Feed feed) {
-		String normalized = FeedUtils.normalizeURL(feed.getUrl());
+		String normalized = Urls.normalize(feed.getUrl());
 		feed.setNormalizedUrl(normalized);
 		feed.setNormalizedUrlHash(Digests.sha1Hex(normalized));
 		feed.setLastUpdated(Instant.now());

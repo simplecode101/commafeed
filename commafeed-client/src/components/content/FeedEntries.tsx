@@ -1,36 +1,34 @@
 import { Trans } from "@lingui/react/macro"
 import { Box } from "@mantine/core"
 import { openModal } from "@mantine/modals"
-import { Constants } from "app/constants"
-import type { ExpendableEntry } from "app/entries/slice"
+import { useEffect } from "react"
+import { useContextMenu } from "react-contexify"
+import InfiniteScroll from "react-infinite-scroller"
+import { throttle } from "throttle-debounce"
+import { Constants } from "@/app/constants"
+import type { ExpendableEntry } from "@/app/entries/slice"
 import {
     loadMoreEntries,
-    markAllEntries,
+    markAllAsReadWithConfirmationIfRequired,
     markEntry,
     reloadEntries,
     selectEntry,
     selectNextEntry,
     selectPreviousEntry,
     starEntry,
-} from "app/entries/thunks"
-import { redirectToRootCategory } from "app/redirect/thunks"
-import { useAppDispatch, useAppSelector } from "app/store"
-import { toggleSidebar } from "app/tree/slice"
-import { selectNextUnreadTreeItem } from "app/tree/thunks"
-import { KeyboardShortcutsHelp } from "components/KeyboardShortcutsHelp"
-import { Loader } from "components/Loader"
-import { useBrowserExtension } from "hooks/useBrowserExtension"
-import { useMousetrap } from "hooks/useMousetrap"
-import { useEffect } from "react"
-import { useContextMenu } from "react-contexify"
-import InfiniteScroll from "react-infinite-scroller"
-import { throttle } from "throttle-debounce"
+} from "@/app/entries/thunks"
+import { redirectToRootCategory } from "@/app/redirect/thunks"
+import { useAppDispatch, useAppSelector } from "@/app/store"
+import { toggleSidebar } from "@/app/tree/slice"
+import { selectNextUnreadTreeItem } from "@/app/tree/thunks"
+import { KeyboardShortcutsHelp } from "@/components/KeyboardShortcutsHelp"
+import { Loader } from "@/components/Loader"
+import { useBrowserExtension } from "@/hooks/useBrowserExtension"
+import { useMousetrap } from "@/hooks/useMousetrap"
 import { FeedEntry } from "./FeedEntry"
 
 export function FeedEntries() {
-    const source = useAppSelector(state => state.entries.source)
     const entries = useAppSelector(state => state.entries.entries)
-    const entriesTimestamp = useAppSelector(state => state.entries.timestamp)
     const selectedEntryId = useAppSelector(state => state.entries.selectedEntryId)
     const hasMore = useAppSelector(state => state.entries.hasMore)
     const loading = useAppSelector(state => state.entries.loading)
@@ -275,17 +273,7 @@ export function FeedEntries() {
     })
     useMousetrap("shift+a", () => {
         // mark all entries as read
-        dispatch(
-            markAllEntries({
-                sourceType: source.type,
-                req: {
-                    id: source.id,
-                    read: true,
-                    olderThan: Date.now(),
-                    insertedBefore: entriesTimestamp,
-                },
-            })
-        )
+        dispatch(markAllAsReadWithConfirmationIfRequired())
     })
     useMousetrap("g a", async () => await dispatch(redirectToRootCategory()))
     useMousetrap("f", () => dispatch(toggleSidebar()))
@@ -299,33 +287,25 @@ export function FeedEntries() {
 
     return (
         <InfiniteScroll
-            id="entries"
-            className={`view-mode-${viewMode}`}
+            className={`cf-entries cf-view-mode-${viewMode}`}
             initialLoad={false}
             loadMore={async () => await (!loading && dispatch(loadMoreEntries()))}
             hasMore={hasMore}
             loader={<Box key={0}>{loading && <Loader />}</Box>}
         >
             {entries.map(entry => (
-                <article
+                <FeedEntry
                     key={entry.id}
-                    ref={el => {
-                        if (el) el.id = Constants.dom.entryId(entry)
-                    }}
-                    data-id={entry.id}
-                >
-                    <FeedEntry
-                        entry={entry}
-                        expanded={!!entry.expanded || viewMode === "expanded"}
-                        selected={entry.id === selectedEntryId}
-                        showSelectionIndicator={entry.id === selectedEntryId && (!entry.expanded || viewMode === "expanded")}
-                        maxWidth={sidebarVisible ? Constants.layout.entryMaxWidth : undefined}
-                        onHeaderClick={event => headerClicked(entry, event)}
-                        onHeaderRightClick={event => headerRightClicked(entry, event)}
-                        onBodyClick={() => bodyClicked(entry)}
-                        onSwipedLeft={async () => await swipedLeft(entry)}
-                    />
-                </article>
+                    entry={entry}
+                    expanded={!!entry.expanded || viewMode === "expanded"}
+                    selected={entry.id === selectedEntryId}
+                    showSelectionIndicator={entry.id === selectedEntryId && (!entry.expanded || viewMode === "expanded")}
+                    maxWidth={sidebarVisible ? Constants.layout.entryMaxWidth : undefined}
+                    onHeaderClick={event => headerClicked(entry, event)}
+                    onHeaderRightClick={event => headerRightClicked(entry, event)}
+                    onBodyClick={() => bodyClicked(entry)}
+                    onSwipedLeft={async () => await swipedLeft(entry)}
+                />
             ))}
         </InfiniteScroll>
     )

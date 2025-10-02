@@ -1,6 +1,6 @@
-import { Loader } from "components/Loader"
-import { useColorScheme } from "hooks/useColorScheme"
 import { useAsync } from "react-async-hook"
+import { Loader } from "@/components/Loader"
+import { useColorScheme } from "@/hooks/useColorScheme"
 
 const init = async () => {
     window.MonacoEnvironment = {
@@ -30,7 +30,7 @@ interface RichCodeEditorProps {
     onChange: (value: string | undefined) => void
 }
 
-function RichCodeEditor(props: RichCodeEditorProps) {
+function RichCodeEditor(props: Readonly<RichCodeEditorProps>) {
     const colorScheme = useColorScheme()
     const editorTheme = colorScheme === "dark" ? "vs-dark" : "light"
 

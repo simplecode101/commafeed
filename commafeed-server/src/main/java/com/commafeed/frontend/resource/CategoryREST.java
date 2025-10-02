@@ -28,6 +28,13 @@ import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import com.commafeed.CommaFeedConfiguration;
 import com.commafeed.backend.dao.FeedCategoryDAO;
@@ -61,13 +68,6 @@ import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.feed.synd.SyndFeedImpl;
 import com.rometools.rome.io.SyndFeedOutput;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -96,10 +96,11 @@ public class CategoryREST {
 	@Path("/entries")
 	@GET
 	@Transactional
-	@Operation(
-			summary = "Get category entries",
-			description = "Get a list of category entries",
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Entries.class))) })
+	@Operation(summary = "Get category entries", description = "Get a list of category entries")
+	@APIResponse(
+			responseCode = "200",
+			content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Entries.class)) })
+	@APIResponse(responseCode = "404", description = "category not found")
 	public Response getCategoryEntries(
 			@Parameter(description = "id of the category, 'all' or 'starred'", required = true) @QueryParam("id") String id,
 			@Parameter(
@@ -110,16 +111,14 @@ public class CategoryREST {
 			@Parameter(description = "limit for paging, default 20, maximum 1000") @DefaultValue("20") @QueryParam("limit") int limit,
 			@Parameter(description = "ordering") @QueryParam("order") @DefaultValue("desc") ReadingOrder order,
 			@Parameter(
-					description = "search for keywords in either the title or the content of the entries, separated by spaces, 3 characters minimum") @QueryParam("keywords") String keywords,
+					description = "search for keywords in either the title or the content of the entries, separated by spaces") @QueryParam("keywords") String keywords,
 			@Parameter(
 					description = "comma-separated list of excluded subscription ids") @QueryParam("excludedSubscriptionIds") String excludedSubscriptionIds,
 			@Parameter(description = "keep only entries tagged with this tag") @QueryParam("tag") String tag) {
 
 		Preconditions.checkNotNull(readType);
 
-		keywords = StringUtils.trimToNull(keywords);
-		Preconditions.checkArgument(keywords == null || StringUtils.length(keywords) >= 3);
-		List<FeedEntryKeyword> entryKeywords = FeedEntryKeyword.fromQueryString(keywords);
+		List<FeedEntryKeyword> entryKeywords = FeedEntryKeyword.fromQueryString(StringUtils.trimToNull(keywords));
 
 		limit = Math.min(limit, 1000);
 		limit = Math.max(0, limit);
@@ -127,7 +126,7 @@ public class CategoryREST {
 		Entries entries = new Entries();
 		entries.setOffset(offset);
 		entries.setLimit(limit);
-		boolean unreadOnly = readType == ReadingMode.unread;
+		boolean unreadOnly = readType == ReadingMode.UNREAD;
 		if (StringUtils.isBlank(id)) {
 			id = ALL;
 		}
@@ -184,7 +183,6 @@ public class CategoryREST {
 
 		entries.setTimestamp(System.currentTimeMillis());
 		entries.setIgnoredReadStatus(STARRED.equals(id) || keywords != null || tag != null);
-		FeedUtils.removeUnwantedFromSearch(entries.getEntries(), entryKeywords);
 		return Response.ok(entries).build();
 	}
 
@@ -203,7 +201,7 @@ public class CategoryREST {
 			@Parameter(description = "limit for paging, default 20, maximum 1000") @DefaultValue("20") @QueryParam("limit") int limit,
 			@Parameter(description = "date ordering") @QueryParam("order") @DefaultValue("desc") ReadingOrder order,
 			@Parameter(
-					description = "search for keywords in either the title or the content of the entries, separated by spaces, 3 characters minimum") @QueryParam("keywords") String keywords,
+					description = "search for keywords in either the title or the content of the entries, separated by spaces") @QueryParam("keywords") String keywords,
 			@Parameter(
 					description = "comma-separated list of excluded subscription ids") @QueryParam("excludedSubscriptionIds") String excludedSubscriptionIds,
 			@Parameter(description = "keep only entries tagged with this tag") @QueryParam("tag") String tag) {
@@ -219,7 +217,7 @@ public class CategoryREST {
 		feed.setTitle("CommaFeed - " + entries.getName());
 		feed.setDescription("CommaFeed - " + entries.getName());
 		feed.setLink(uri.getBaseUri().toString());
-		feed.setEntries(entries.getEntries().stream().map(Entry::asRss).toList());
+		feed.setEntries(entries.getEntries().stream().map(FeedUtils::asRss).toList());
 
 		SyndFeedOutput output = new SyndFeedOutput();
 		StringWriter writer = new StringWriter();
@@ -271,11 +269,8 @@ public class CategoryREST {
 	@Path("/add")
 	@POST
 	@Transactional
-	@Operation(
-			summary = "Add a category",
-			description = "Add a new feed category",
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Long.class))) })
-	public Response addCategory(@Valid @Parameter(required = true) AddCategoryRequest req) {
+	@Operation(summary = "Add a category", description = "Add a new feed category")
+	public Long addCategory(@Valid @Parameter(required = true) AddCategoryRequest req) {
 		Preconditions.checkNotNull(req);
 		Preconditions.checkNotNull(req.getName());
 
@@ -291,8 +286,8 @@ public class CategoryREST {
 			parent.setId(Long.valueOf(parentId));
 			cat.setParent(parent);
 		}
-		feedCategoryDAO.saveOrUpdate(cat);
-		return Response.ok(cat.getId()).build();
+		feedCategoryDAO.persist(cat);
+		return cat.getId();
 	}
 
 	@POST
@@ -311,14 +306,13 @@ public class CategoryREST {
 			for (FeedSubscription sub : subs) {
 				sub.setCategory(null);
 			}
-			feedSubscriptionDAO.saveOrUpdate(subs);
+
 			List<FeedCategory> categories = feedCategoryDAO.findAllChildrenCategories(user, cat);
 			for (FeedCategory child : categories) {
 				if (!child.getId().equals(cat.getId()) && child.getParent().getId().equals(cat.getId())) {
 					child.setParent(null);
 				}
 			}
-			feedCategoryDAO.saveOrUpdate(categories);
 
 			feedCategoryDAO.delete(cat);
 			return Response.ok().build();
@@ -330,7 +324,7 @@ public class CategoryREST {
 	@POST
 	@Path("/modify")
 	@Transactional
-	@Operation(summary = "Rename a category", description = "Rename an existing feed category")
+	@Operation(summary = "Modify a category", description = "Modify an existing feed category")
 	public Response modifyCategory(@Valid @Parameter(required = true) CategoryModificationRequest req) {
 		Preconditions.checkNotNull(req);
 		Preconditions.checkNotNull(req.getId());
@@ -344,7 +338,7 @@ public class CategoryREST {
 
 		FeedCategory parent = null;
 		if (req.getParentId() != null && !CategoryREST.ALL.equals(req.getParentId())
-				&& !StringUtils.equals(req.getParentId(), String.valueOf(req.getId()))) {
+				&& !Strings.CS.equals(req.getParentId(), String.valueOf(req.getId()))) {
 			parent = feedCategoryDAO.findById(user, Long.valueOf(req.getParentId()));
 		}
 		category.setParent(parent);
@@ -367,12 +361,8 @@ public class CategoryREST {
 			for (int i = 0; i < categories.size(); i++) {
 				categories.get(i).setPosition(i);
 			}
-			feedCategoryDAO.saveOrUpdate(categories);
-		} else {
-			feedCategoryDAO.saveOrUpdate(category);
 		}
 
-		feedCategoryDAO.saveOrUpdate(category);
 		return Response.ok().build();
 	}
 
@@ -390,30 +380,25 @@ public class CategoryREST {
 			return Response.status(Status.NOT_FOUND).build();
 		}
 		category.setCollapsed(req.isCollapse());
-		feedCategoryDAO.saveOrUpdate(category);
+
 		return Response.ok().build();
 	}
 
 	@GET
 	@Path("/unreadCount")
 	@Transactional
-	@Operation(
-			summary = "Get unread count for feed subscriptions",
-			responses = { @ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = UnreadCount.class)))) })
-	public Response getUnreadCount() {
+	@Operation(summary = "Get unread count for feed subscriptions")
+	public List<UnreadCount> getUnreadCount() {
 		User user = authenticationContext.getCurrentUser();
 		Map<Long, UnreadCount> unreadCount = feedSubscriptionService.getUnreadCount(user);
-		return Response.ok(Lists.newArrayList(unreadCount.values())).build();
+		return Lists.newArrayList(unreadCount.values());
 	}
 
 	@GET
 	@Path("/get")
 	@Transactional
-	@Operation(
-			summary = "Get root category",
-			description = "Get all categories and subscriptions of the user",
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Category.class))) })
-	public Response getRootCategory() {
+	@Operation(summary = "Get root category", description = "Get all categories and subscriptions of the user")
+	public Category getRootCategory() {
 		User user = authenticationContext.getCurrentUser();
 
 		List<FeedCategory> categories = feedCategoryDAO.findAll(user);
@@ -424,7 +409,7 @@ public class CategoryREST {
 		root.setId("all");
 		root.setName("All");
 
-		return Response.ok(root).build();
+		return root;
 	}
 
 	private Category buildCategory(Long id, List<FeedCategory> categories, List<FeedSubscription> subscriptions,

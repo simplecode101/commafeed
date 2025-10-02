@@ -6,16 +6,15 @@
 	<parent>
 		<groupId>com.commafeed</groupId>
 		<artifactId>commafeed</artifactId>
-		<version>5.7.0</version>
+		<version>5.11.1</version>
 	</parent>
 	<artifactId>commafeed-server</artifactId>
 	<name>CommaFeed Server</name>
 
 	<properties>
-		<quarkus.version>3.21.1</quarkus.version>
-		<querydsl.version>6.10.1</querydsl.version>
+		<quarkus.version>3.28.2</quarkus.version>
+		<querydsl.version>7.0</querydsl.version>
 		<rome.version>2.1.0</rome.version>
-		<swagger.version>2.2.29</swagger.version>
 
 		<build.database>h2</build.database>
 	</properties>
@@ -118,7 +117,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>3.6.0</version>
 				<dependencies>
 					<dependency>
 						<groupId>io.quarkus</groupId>
@@ -166,7 +165,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.5.3</version>
+				<version>3.5.4</version>
 				<configuration>
 					<systemPropertyVariables>
 						<java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
@@ -177,7 +176,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>3.5.3</version>
+				<version>3.5.4</version>
 				<executions>
 					<execution>
 						<goals>
@@ -219,9 +218,64 @@
 				</dependencies>
 			</plugin>
 			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.13</version>
+				<configuration>
+					<!-- excluding SACParserCSS21TokenManager because it causes a "Method too large" exception -->
+					<excludes>
+						<exclude>com/steadystate/css/parser/SACParserCSS21TokenManager</exclude>
+					</excludes>
+				</configuration>
+				<executions>
+					<execution>
+						<id>unit-tests-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<destFile>${project.build.directory}/jacoco-output/jacoco-unit-tests.exec</destFile>
+						</configuration>
+					</execution>
+					<execution>
+						<id>integration-tests-agent</id>
+						<goals>
+							<goal>prepare-agent-integration</goal>
+						</goals>
+						<configuration>
+							<destFile>${project.build.directory}/jacoco-output/jacoco-integration-tests.exec</destFile>
+						</configuration>
+					</execution>
+					<execution>
+						<id>merge</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>merge</goal>
+						</goals>
+						<configuration>
+							<fileSets>
+								<fileSet>
+									<directory>${project.build.directory}/jacoco-output</directory>
+									<includes>
+										<include>*.exec</include>
+									</includes>
+								</fileSet>
+							</fileSets>
+						</configuration>
+					</execution>
+					<execution>
+						<id>generate-code-coverage-report</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>io.github.git-commit-id</groupId>
 				<artifactId>git-commit-id-maven-plugin</artifactId>
-				<version>9.0.1</version>
+				<version>9.0.2</version>
 				<executions>
 					<execution>
 						<goals>
@@ -238,30 +292,6 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>io.swagger.core.v3</groupId>
-				<artifactId>swagger-maven-plugin-jakarta</artifactId>
-				<version>${swagger.version}</version>
-				<?m2e ignore?>
-				<configuration>
-					<outputPath>${project.build.directory}/classes/META-INF/resources</outputPath>
-					<outputFormat>JSONANDYAML</outputFormat>
-					<resourcePackages>
-						<package>com.commafeed.frontend.resource</package>
-						<package>com.commafeed.frontend.model</package>
-						<package>com.commafeed.frontend.model.request</package>
-					</resourcePackages>
-					<prettyPrint>true</prettyPrint>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>compile</phase>
-						<goals>
-							<goal>resolve</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
 				<version>3.6.0</version>
@@ -269,7 +299,7 @@
 					<dependency>
 						<groupId>com.puppycrawl.tools</groupId>
 						<artifactId>checkstyle</artifactId>
-						<version>10.23.0</version>
+						<version>11.1.0</version>
 					</dependency>
 				</dependencies>
 				<executions>
@@ -298,7 +328,7 @@
 			<plugin>
 				<groupId>com.diffplug.spotless</groupId>
 				<artifactId>spotless-maven-plugin</artifactId>
-				<version>2.44.3</version>
+				<version>3.0.0</version>
 				<?m2e ignore?>
 				<executions>
 					<execution>
@@ -327,14 +357,14 @@
 		<dependency>
 			<groupId>com.commafeed</groupId>
 			<artifactId>commafeed-client</artifactId>
-			<version>5.7.0</version>
+			<version>5.11.1</version>
 		</dependency>
 
 		<!-- compile-time processors -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.38</version>
+			<version>1.18.42</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -395,16 +425,15 @@
 			<groupId>io.quarkus</groupId>
 			<artifactId>quarkus-liquibase</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-smallrye-openapi</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>io.dropwizard.metrics</groupId>
 			<artifactId>metrics-json</artifactId>
-			<version>4.2.30</version>
-		</dependency>
-		<dependency>
-			<groupId>io.swagger.core.v3</groupId>
-			<artifactId>swagger-annotations</artifactId>
-			<version>${swagger.version}</version>
+			<version>4.2.37</version>
 		</dependency>
 		<dependency>
 			<groupId>io.github.openfeign.querydsl</groupId>
@@ -425,7 +454,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-collections4</artifactId>
-			<version>4.4</version>
+			<version>4.5.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -471,7 +500,7 @@
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.19.1</version>
+			<version>1.21.2</version>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
@@ -491,7 +520,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents.client5</groupId>
 			<artifactId>httpclient5</artifactId>
-			<version>5.4.3</version>
+			<version>5.5.1</version>
 		</dependency>
 		<!-- add brotli support for httpclient5 -->
 		<dependency>
@@ -501,14 +530,25 @@
 		</dependency>
 		<dependency>
 			<groupId>io.github.hakky54</groupId>
-			<artifactId>sslcontext-kickstart-for-apache5</artifactId>
-			<version>9.1.0</version>
+			<artifactId>ayza-for-apache5</artifactId>
+			<version>10.0.0</version>
 		</dependency>
 
 		<!-- test dependencies -->
 		<dependency>
 			<groupId>io.quarkus</groupId>
 			<artifactId>quarkus-junit5-mockito</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-jacoco</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.quarkiverse.playwright</groupId>
+			<artifactId>quarkus-playwright</artifactId>
+			<version>2.1.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -525,12 +565,6 @@
 		<dependency>
 			<groupId>org.awaitility</groupId>
 			<artifactId>awaitility</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.microsoft.playwright</groupId>
-			<artifactId>playwright</artifactId>
-			<version>1.51.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
