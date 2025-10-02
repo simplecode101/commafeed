@@ -1,0 +1,1 @@
+ ./mvnw -pl commafeed-server -Pmysql quarkus:dev

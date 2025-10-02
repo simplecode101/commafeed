@@ -21,9 +21,10 @@ public class ApiKeyAuthenticationMecanism implements HttpAuthenticationMechanism
 	@Override
 	public Uni<SecurityIdentity> authenticate(RoutingContext context, IdentityProviderManager identityProviderManager) {
 		// only authorize api key for GET requests
-		if (!context.request().method().name().equals("GET")) {
-			return Uni.createFrom().optional(Optional.empty());
-		}
+		// add feed entries api path ，all methods of this path are allowed
+		// if (!context.request().method().name().equals("GET") || !context.request().path().startsWith("/rest/entry/mark")) {
+		// return Uni.createFrom().optional(Optional.empty());
+		// }
 
 		String apiKey = context.request().getParam("apiKey");
 		if (apiKey == null) {
