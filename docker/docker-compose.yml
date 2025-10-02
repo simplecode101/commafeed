@@ -1,0 +1,15 @@
+services:
+  commafeed:
+    image: commafeed-mysql
+    restart: unless-stopped
+    volumes:
+      - ./data:/commafeed/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    environment:
+      - TZ=Asia/Shanghai
+      - POST_API_MP_REST_URL=http://your_real_host:5000
+    ports:
+      - 8082:8082j
