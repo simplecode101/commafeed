@@ -4,7 +4,7 @@ EXPOSE 8082
 RUN mkdir -p /commafeed/data
 VOLUME /commafeed/data
 
-COPY commafeed-5.7.0-h2/ /commafeed
+COPY commafeed-5.11.1-mysql/ /commafeed
 WORKDIR /commafeed
 
 CMD ["java", \

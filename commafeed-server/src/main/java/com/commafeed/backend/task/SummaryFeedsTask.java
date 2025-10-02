@@ -92,7 +92,7 @@ public class SummaryFeedsTask extends ScheduledTask {
 			List<FeedSubscription> subs = feedSubscriptionDAO.findAll(user);
 			List<FeedEntryKeyword> entryKeywords = FeedEntryKeyword.fromQueryString("");
 			List<FeedEntryStatus> entryList = feedEntryStatusDAO.findBySubscriptions(user, subs, true, entryKeywords, null, 0, 1000,
-					ReadingOrder.asc, true, null, null, null);
+					ReadingOrder.ASC, true, null, null, null);
 			statuses.addAll(entryList);
 		});
 		return statuses;
@@ -117,14 +117,14 @@ public class SummaryFeedsTask extends ScheduledTask {
 	public void updateRetryTimes(FeedEntry entry) {
 		Integer retryTimes = entry.getRetryTimes() == null ? 0 : entry.getRetryTimes();
 		entry.setRetryTimes(retryTimes + 1);
-		feedEntryDAO.saveOrUpdate(entry);
+		feedEntryDAO.persist(entry);
 		log.info("url={},summary failed,entry retryTimes={}", entry.getUrl(), entry.getRetryTimes());
 	}
 
 	@Transactional
 	public void updateEntry(AIResponse.RespData summary, FeedEntry entry) {
 		entry.setSummary(summary.getSummary());
-		feedEntryDAO.saveOrUpdate(entry);
+		feedEntryDAO.persist(entry);
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 services:
   commafeed:
-    image: test
+    image: commafeed-mysql
     restart: unless-stopped
     volumes:
       - ./data:/commafeed/data
@@ -12,4 +12,4 @@ services:
       - TZ=Asia/Shanghai
       - POST_API_MP_REST_URL=http://your_real_host:5000
     ports:
-      - 8082:8082
+      - 8082:8082j
