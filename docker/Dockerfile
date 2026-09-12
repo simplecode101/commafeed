@@ -4,7 +4,9 @@ EXPOSE 8082
 RUN mkdir -p /commafeed/data
 VOLUME /commafeed/data
 
-COPY commafeed-5.11.1-mysql-jvm/ /commafeed
+# maven 打包产物目录名，由 build.sh 传入，形如 commafeed-7.3.2-postgresql
+ARG APP_DIR
+COPY ${APP_DIR}/ /commafeed
 WORKDIR /commafeed
 
 CMD ["java", \
