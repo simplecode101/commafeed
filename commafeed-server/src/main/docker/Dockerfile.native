@@ -1,4 +1,4 @@
-FROM debian:13.1@sha256:fd8f5a1df07b5195613e4b9a0b6a947d3772a151b81975db27d47f093f60c6e6
+FROM debian:13.6@sha256:f324c7ff54321e8d9c588493a20244965938ce0aa50bbd1022d38010e9ffc4b1
 ARG TARGETARCH
 
 EXPOSE 8082
@@ -6,7 +6,7 @@ EXPOSE 8082
 RUN mkdir -p /commafeed/data
 VOLUME /commafeed/data
 
-COPY artifacts/commafeed-*-${TARGETARCH}-runner /commafeed/application
+COPY artifacts/commafeed-*-${TARGETARCH}-runner /commafeed/commafeed
 WORKDIR /commafeed
 
-CMD ["./application"]
+CMD ["./commafeed"]

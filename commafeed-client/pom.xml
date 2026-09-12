@@ -6,19 +6,16 @@
 	<parent>
 		<groupId>com.commafeed</groupId>
 		<artifactId>commafeed</artifactId>
-		<version>5.11.1</version>
+		<version>7.3.2</version>
 	</parent>
 	<artifactId>commafeed-client</artifactId>
 	<name>CommaFeed Client</name>
 
 	<properties>
-		<sonar.sources>package.json,src</sonar.sources>
-		<sonar.coverage.exclusions>**/*</sonar.coverage.exclusions>
-
 		<!-- renovate: datasource=node-version depName=node -->
-		<node.version>v22.20.0</node.version>
+		<node.version>v24.20.0</node.version>
 		<!-- renovate: datasource=npm depName=npm -->
-		<npm.version>11.6.1</npm.version>
+		<npm.version>12.0.2</npm.version>
 	</properties>
 
 	<build>
@@ -26,7 +23,7 @@
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
 				<artifactId>frontend-maven-plugin</artifactId>
-				<version>1.15.4</version>
+				<version>2.0.2</version>
 				<?m2e ignore?>
 				<executions>
 					<execution>
@@ -75,7 +72,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.3.1</version>
+				<version>3.5.0</version>
 				<executions>
 					<execution>
 						<id>copy web interface to resources</id>
@@ -97,4 +94,49 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<!-- This profile is used to kill the Biome process on Windows -->
+		<!-- npm ci can fail if Biome is running (e.g., in the IDE) because it locks some files -->
+		<profile>
+			<id>kill-biome</id>
+			<activation>
+				<os>
+					<family>Windows</family>
+				</os>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>3.6.3</version>
+						<executions>
+							<execution>
+								<id>kill-biome</id>
+								<phase>initialize</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>taskkill</executable>
+									<arguments>
+										<argument>/F</argument>
+										<argument>/IM</argument>
+										<argument>biome.exe</argument>
+									</arguments>
+									<successCodes>
+										<successCode>0</successCode>
+										<!-- taskkill returns 128 if the process is not found, which is fine in this case -->
+										<successCode>128</successCode>
+									</successCodes>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 </project>

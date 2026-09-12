@@ -2,7 +2,7 @@ import { msg } from "@lingui/core/macro"
 import { useLingui } from "@lingui/react"
 import { Box, Center, CloseButton, Divider, Group, Indicator, Popover, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
-import { useEffect } from "react"
+import { type ReactNode, useEffect } from "react"
 import {
     TbArrowDown,
     TbArrowUp,
@@ -19,7 +19,7 @@ import {
 } from "react-icons/tb"
 import { markAllAsReadWithConfirmationIfRequired, reloadEntries, search, selectNextEntry, selectPreviousEntry } from "@/app/entries/thunks"
 import { useAppDispatch, useAppSelector } from "@/app/store"
-import { changeReadingMode, changeReadingOrder } from "@/app/user/thunks"
+import { changeSettings } from "@/app/user/thunks"
 import { ActionButton } from "@/components/ActionButton"
 import { Loader } from "@/components/Loader"
 import { useActionButton } from "@/hooks/useActionButton"
@@ -31,7 +31,7 @@ function HeaderDivider() {
     return <Divider orientation="vertical" />
 }
 
-function HeaderToolbar(props: { children: React.ReactNode }) {
+function HeaderToolbar(props: { children: ReactNode }) {
     const { spacing } = useActionButton()
     const mobile = useMobile("480px")
     return mobile ? (
@@ -47,7 +47,7 @@ function HeaderToolbar(props: { children: React.ReactNode }) {
             {props.children}
         </Box>
     ) : (
-        <Group gap={spacing} className="cf-toolbar">
+        <Group gap={spacing} wrap="nowrap" className="cf-toolbar">
             {props.children}
         </Group>
     )
@@ -73,6 +73,25 @@ export function Header() {
     }, [setValues, searchFromStore])
 
     if (!settings) return <Loader />
+
+    const toggleReadingMode = async () => {
+        await dispatch(
+            changeSettings({
+                readingMode: settings.readingMode === "all" ? "unread" : "all",
+            })
+        )
+        dispatch(reloadEntries())
+    }
+
+    const toggleReadingOrder = async () => {
+        await dispatch(
+            changeSettings({
+                readingOrder: settings.readingOrder === "asc" ? "desc" : "asc",
+            })
+        )
+        dispatch(reloadEntries())
+    }
+
     return (
         <Center className="cf-toolbar-wrapper">
             <HeaderToolbar>
@@ -121,12 +140,12 @@ export function Header() {
                 <ActionButton
                     icon={settings.readingMode === "all" ? <TbEye size={iconSize} /> : <TbEyeOff size={iconSize} />}
                     label={settings.readingMode === "all" ? msg`All` : msg`Unread`}
-                    onClick={async () => await dispatch(changeReadingMode(settings.readingMode === "all" ? "unread" : "all"))}
+                    onClick={toggleReadingMode}
                 />
                 <ActionButton
                     icon={settings.readingOrder === "asc" ? <TbSortAscending size={iconSize} /> : <TbSortDescending size={iconSize} />}
                     label={settings.readingOrder === "asc" ? msg`Asc` : msg`Desc`}
-                    onClick={async () => await dispatch(changeReadingOrder(settings.readingOrder === "asc" ? "desc" : "asc"))}
+                    onClick={toggleReadingOrder}
                 />
 
                 <Popover>

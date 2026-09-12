@@ -15,8 +15,9 @@ Google Reader inspired self-hosted RSS reader, based on Quarkus and React/TypeSc
 - Supports thousands of users and millions of feeds
 - OPML import/export
 - REST API
-- Fever-compatible API for native mobile apps
+- Fever and Google Reader API for native mobile apps
 - Can automatically mark articles as read based on user-defined rules
+- Push notifications when new articles are published
 - Highly customizable with [custom CSS](https://athou.github.io/commafeed/documentation/custom-css) and JavaScript
 - [Browser extension](https://github.com/Athou/commafeed-browser-extension)
 - Compiles to native code for blazing fast startup and low memory usage
@@ -26,11 +27,18 @@ Google Reader inspired self-hosted RSS reader, based on Quarkus and React/TypeSc
     - MySQL
     - MariaDB
 
-## Deployment
+## Usage
+
+### Public instance
+
+A free public instance is available at https://www.commafeed.com.
+
+It has no ads, no tracking, and your data is never exploited or sold to third parties. The service is funded entirely through donations.
+However, this public instance does have a few limitations compared to self-hosted setups, outlined [here](https://github.com/Athou/commafeed/discussions/1567).
 
 ### Docker
 
-Docker is the easiest way to get started with CommaFeed.
+Docker is the easiest way to get started with self-hosted CommaFeed.
 
 Docker images are built automatically and are available at https://hub.docker.com/r/athou/commafeed
 
@@ -62,8 +70,8 @@ memory usage.
     ./mvnw clean package [-P<database> [-Pnative]] [-DskipTests]
 
 - `<database>` can be one of `h2`, `postgresql`, `mysql` or `mariadb`. The default is `h2`.
-- `-Pnative` compiles the application to native code. This requires GraalVM to be installed (`GRAALVM_HOME` environment
-  variable pointing to a GraalVM installation).
+- `-Pnative` compiles the application to native code. This requires either GraalVM to be installed (`GRAALVM_HOME` environment
+  variable pointing to a GraalVM installation) or a container environment to be available (docker/podman/...).
 - `-DskipTests` to speed up the build process by skipping tests.
 
 When the build is complete:
@@ -103,7 +111,7 @@ There are multiple ways to configure CommaFeed:
 - Environment variables (keys in UPPER_CASE)
 - a `.env` file in the working directory (keys in UPPER_CASE)
 
-The properties file is recommended because CommaFeed will be able to warn about invalid properties and typos.
+When in doubt, the properties file is recommended because CommaFeed will be able to warn about invalid properties and typos.
 
 All [CommaFeed settings](https://athou.github.io/commafeed/documentation) are optional and have sensible default values.
 
@@ -113,7 +121,6 @@ meaning that you will have to log back in after each restart of the application.
 All other Quarkus settings can be found [here](https://quarkus.io/guides/all-config).
 
 When started, the server will listen on http://localhost:8082.
-The default user is `admin` and the default password is `admin`.
 
 ### Updates
 
@@ -151,6 +158,28 @@ IBM provides precompiled binaries for OpenJ9
 named [Semeru](https://developer.ibm.com/languages/java/semeru-runtimes/downloads/).
 This is the JVM used in
 the [Docker image](https://github.com/Athou/commafeed/blob/master/commafeed-server/src/main/docker/Dockerfile.jvm).
+
+## FAQ
+
+### Getting "Access to local address blocked" when adding a feed
+
+CommaFeed blocks access to local resources by default to prevent [SSRF](https://en.wikipedia.org/wiki/Server-side_request_forgery) attacks.
+If you want to subscribe to feeds that are only available on your local network, you can disable this security measure by setting the `commafeed.http-client.block-local-addresses` variable to `false`.
+Do this only if you trust all users of your CommaFeed instance not to access private resources.
+
+### Listen on a single network interface
+
+By default, CommaFeed listens on all interfaces. You can restrict it by setting `quarkus.http.host`.
+
+Note that if you set it to a local name like `127.0.0.1` host validation is enabled automatically. This prevents
+access if you're using a reverse proxy like Nginx. To fix, add your actual hostname to `allowed-hosts`:
+
+```
+quarkus.http.host=127.0.0.1
+quarkus.http.proxy.proxy-address-forwarding=true
+quarkus.http.proxy.allow-forwarded=true
+quarkus.http.host-validation.allowed-hosts=commafeed.example.com
+```
 
 ## Translation
 

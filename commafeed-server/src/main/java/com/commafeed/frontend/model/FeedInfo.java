@@ -1,11 +1,12 @@
 package com.commafeed.frontend.model;
 
-import java.io.Serializable;
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+import lombok.Data;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-import io.quarkus.runtime.annotations.RegisterForReflection;
-import lombok.Data;
+import java.io.Serializable;
 
 @SuppressWarnings("serial")
 @Schema(description = "Feed details")
@@ -13,10 +14,9 @@ import lombok.Data;
 @RegisterForReflection
 public class FeedInfo implements Serializable {
 
-	@Schema(description = "url", required = true)
-	private String url;
+    @Schema(description = "url", required = true)
+    private String url;
 
-	@Schema(description = "title", required = true)
-	private String title;
-
+    @Schema(description = "title", required = true)
+    private String title;
 }

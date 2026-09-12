@@ -1,24 +1,5 @@
 package com.commafeed.backend.feed.parser;
 
-import java.io.StringReader;
-import java.nio.charset.Charset;
-import java.text.DateFormat;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import jakarta.inject.Singleton;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
-import org.jdom2.Element;
-import org.jdom2.Namespace;
-import org.xml.sax.InputSource;
-
 import com.commafeed.backend.Urls;
 import com.commafeed.backend.feed.parser.FeedParserResult.Content;
 import com.commafeed.backend.feed.parser.FeedParserResult.Enclosure;
@@ -38,247 +19,285 @@ import com.rometools.rome.feed.synd.SyndLink;
 import com.rometools.rome.feed.synd.SyndLinkImpl;
 import com.rometools.rome.io.SyndFeedInput;
 
-import lombok.RequiredArgsConstructor;
+import jakarta.inject.Singleton;
 
-/**
- * Parses raw xml into a FeedParserResult object
- */
-@RequiredArgsConstructor
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
+import org.xml.sax.InputSource;
+
+import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/** Parses raw xml into a FeedParserResult object */
 @Singleton
 public class FeedParser {
 
-	private static final Namespace ATOM_10_NS = Namespace.getNamespace("http://www.w3.org/2005/Atom");
+    private static final Namespace ATOM_10_NS =
+            Namespace.getNamespace("http://www.w3.org/2005/Atom");
 
-	private static final Instant START = Instant.ofEpochMilli(86400000);
-	private static final Instant END = Instant.ofEpochMilli(1000L * Integer.MAX_VALUE - 86400000);
+    private static final Instant START = Instant.ofEpochMilli(86400000);
+    private static final Instant END = Instant.ofEpochMilli(1000L * Integer.MAX_VALUE - 86400000);
 
-	private final EncodingDetector encodingDetector;
-	private final FeedCleaner feedCleaner;
+    private static final Comparator<Entry> ENTRY_COMPARATOR =
+            Comparator.comparing(Entry::published).reversed();
 
-	public FeedParserResult parse(String feedUrl, byte[] xml) throws FeedParsingException {
-		try {
-			Charset encoding = encodingDetector.getEncoding(xml);
-			String xmlString = feedCleaner.trimInvalidXmlCharacters(new String(xml, encoding));
-			if (xmlString == null) {
-				throw new FeedParsingException("Input string is null for url " + feedUrl);
-			}
-			xmlString = feedCleaner.replaceHtmlEntitiesWithNumericEntities(xmlString);
-			xmlString = feedCleaner.removeDoctypeDeclarations(xmlString);
+    private final EncodingDetector encodingDetector;
+    private final XMLCleaner xmlCleaner;
 
-			InputSource source = new InputSource(new StringReader(xmlString));
-			SyndFeed feed = new SyndFeedInput().build(source);
-			handleForeignMarkup(feed);
+    public FeedParser(EncodingDetector encodingDetector, XMLCleaner xmlCleaner) {
+        this.encodingDetector = encodingDetector;
+        this.xmlCleaner = xmlCleaner;
+    }
 
-			String title = feed.getTitle();
-			String link = feed.getLink();
-			List<Entry> entries = buildEntries(feed, feedUrl);
-			Instant lastEntryDate = entries.stream().findFirst().map(Entry::published).orElse(null);
-			Instant lastPublishedDate = toValidInstant(feed.getPublishedDate(), false);
-			if (lastPublishedDate == null || lastEntryDate != null && lastPublishedDate.isBefore(lastEntryDate)) {
-				lastPublishedDate = lastEntryDate;
-			}
-			Long averageEntryInterval = averageTimeBetweenEntries(entries);
+    public FeedParserResult parse(String feedUrl, byte[] xml) throws FeedParsingException {
+        try {
+            Charset encoding = encodingDetector.getEncoding(xml);
 
-			return new FeedParserResult(title, link, lastPublishedDate, averageEntryInterval, lastEntryDate, entries);
-		} catch (FeedParsingException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new FeedParsingException(String.format("Could not parse feed from %s : %s", feedUrl, e.getMessage()), e);
-		}
-	}
+            String xmlString = xmlCleaner.clean(new String(xml, encoding));
+            if (xmlString == null) {
+                throw new FeedParsingException("Input string is empty for url " + feedUrl);
+            }
 
-	/**
-	 * Adds atom links for rss feeds
-	 */
-	private void handleForeignMarkup(SyndFeed feed) {
-		List<Element> foreignMarkup = feed.getForeignMarkup();
-		if (foreignMarkup == null) {
-			return;
-		}
-		for (Element element : foreignMarkup) {
-			if ("link".equals(element.getName()) && ATOM_10_NS.equals(element.getNamespace())) {
-				SyndLink link = new SyndLinkImpl();
-				link.setRel(element.getAttributeValue("rel"));
-				link.setHref(element.getAttributeValue("href"));
-				feed.getLinks().add(link);
-			}
-		}
-	}
+            InputSource source = new InputSource(new StringReader(xmlString));
+            SyndFeed feed = new SyndFeedInput().build(source);
+            handleForeignMarkup(feed);
 
-	private List<Entry> buildEntries(SyndFeed feed, String feedUrl) {
-		List<Entry> entries = new ArrayList<>();
+            String title = feed.getTitle();
+            String link = Urls.sanitize(feed.getLink());
+            String iconUrl = Urls.sanitize(feed.getIcon() != null ? feed.getIcon().getUrl() : null);
+            List<Entry> entries = buildEntries(feed, feedUrl);
+            Instant lastEntryDate = entries.stream().findFirst().map(Entry::published).orElse(null);
+            Instant lastPublishedDate = toValidInstant(feed.getPublishedDate(), false);
+            if (lastPublishedDate == null
+                    || lastEntryDate != null && lastPublishedDate.isBefore(lastEntryDate)) {
+                lastPublishedDate = lastEntryDate;
+            }
+            Long averageEntryInterval = averageTimeBetweenEntries(entries);
 
-		for (SyndEntry item : feed.getEntries()) {
-			String guid = item.getUri();
-			if (StringUtils.isBlank(guid)) {
-				guid = item.getLink();
-			}
-			if (StringUtils.isBlank(guid)) {
-				// no guid and no link, skip entry
-				continue;
-			}
+            return new FeedParserResult(
+                    title,
+                    link,
+                    iconUrl,
+                    lastPublishedDate,
+                    averageEntryInterval,
+                    lastEntryDate,
+                    entries);
+        } catch (FeedParsingException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new FeedParsingException(
+                    String.format("Could not parse feed from %s : %s", feedUrl, e.getMessage()), e);
+        }
+    }
 
-			String url = buildEntryUrl(feed, feedUrl, item);
-			if (StringUtils.isBlank(url) && Urls.isAbsolute(guid)) {
-				// if link is empty but guid is used as url, use guid
-				url = guid;
-			}
+    /** Adds atom links for rss feeds */
+    private void handleForeignMarkup(SyndFeed feed) {
+        List<Element> foreignMarkup = feed.getForeignMarkup();
+        if (foreignMarkup == null) {
+            return;
+        }
+        for (Element element : foreignMarkup) {
+            if ("link".equals(element.getName()) && ATOM_10_NS.equals(element.getNamespace())) {
+                SyndLink link = new SyndLinkImpl();
+                link.setRel(element.getAttributeValue("rel"));
+                link.setHref(element.getAttributeValue("href"));
+                feed.getLinks().add(link);
+            }
+        }
+    }
 
-			Instant publishedDate = buildEntryPublishedDate(item);
-			Content content = buildContent(item);
+    private List<Entry> buildEntries(SyndFeed feed, String feedUrl) {
+        List<Entry> entries = new ArrayList<>();
 
-			entries.add(new Entry(guid, url, publishedDate, content));
-		}
+        for (SyndEntry item : feed.getEntries()) {
+            String guid = item.getUri();
+            if (StringUtils.isBlank(guid)) {
+                guid = item.getLink();
+            }
+            if (StringUtils.isBlank(guid)) {
+                // no guid and no link, skip entry
+                continue;
+            }
 
-		entries.sort(Comparator.comparing(Entry::published).reversed());
-		return entries;
-	}
+            String url = buildEntryUrl(feed, feedUrl, item);
+            if (StringUtils.isBlank(url) && Urls.isAbsolute(guid)) {
+                // if link is empty but guid is used as url, use guid
+                url = guid;
+            }
 
-	private Content buildContent(SyndEntry item) {
-		String title = getTitle(item);
-		String content = getContent(item);
-		String author = StringUtils.trimToNull(item.getAuthor());
-		String categories = StringUtils
-				.trimToNull(item.getCategories().stream().map(SyndCategory::getName).collect(Collectors.joining(", ")));
+            Instant publishedDate = buildEntryPublishedDate(item);
+            Content content = buildContent(item);
 
-		Enclosure enclosure = buildEnclosure(item);
-		Media media = buildMedia(item);
-		return new Content(title, content, author, categories, enclosure, media);
-	}
+            entries.add(new Entry(guid, Urls.sanitize(url), publishedDate, content));
+        }
 
-	private Enclosure buildEnclosure(SyndEntry item) {
-		SyndEnclosure enclosure = item.getEnclosures().stream().findFirst().orElse(null);
-		if (enclosure == null) {
-			return null;
-		}
+        entries.sort(ENTRY_COMPARATOR);
+        return entries;
+    }
 
-		return new Enclosure(enclosure.getUrl(), enclosure.getType());
-	}
+    private Content buildContent(SyndEntry item) {
+        String title = getTitle(item);
+        String content = getContent(item);
+        String author = StringUtils.trimToNull(item.getAuthor());
+        String categories =
+                StringUtils.trimToNull(
+                        item.getCategories().stream()
+                                .map(SyndCategory::getName)
+                                .collect(Collectors.joining(", ")));
 
-	private Instant buildEntryPublishedDate(SyndEntry item) {
-		Date date = item.getPublishedDate();
-		if (date == null) {
-			date = item.getUpdatedDate();
-		}
-		return toValidInstant(date, true);
-	}
+        Enclosure enclosure = buildEnclosure(item);
+        Media media = buildMedia(item);
+        return new Content(title, content, author, categories, enclosure, media);
+    }
 
-	private String buildEntryUrl(SyndFeed feed, String feedUrl, SyndEntry item) {
-		String url = StringUtils.trimToNull(StringUtils.normalizeSpace(item.getLink()));
-		if (url == null || Urls.isAbsolute(url)) {
-			// url is absolute, nothing to do
-			return url;
-		}
+    private Enclosure buildEnclosure(SyndEntry item) {
+        SyndEnclosure enclosure = item.getEnclosures().stream().findFirst().orElse(null);
+        if (enclosure == null) {
+            return null;
+        }
 
-		// url is relative, trying to resolve it
-		String feedLink = StringUtils.trimToNull(StringUtils.normalizeSpace(feed.getLink()));
-		return Urls.toAbsolute(url, feedLink, feedUrl);
-	}
+        return new Enclosure(Urls.sanitize(enclosure.getUrl()), enclosure.getType());
+    }
 
-	private Instant toValidInstant(Date date, boolean nullToNow) {
-		Instant now = Instant.now();
-		if (date == null) {
-			return nullToNow ? now : null;
-		}
+    private Instant buildEntryPublishedDate(SyndEntry item) {
+        Date date = item.getPublishedDate();
+        if (date == null) {
+            date = item.getUpdatedDate();
+        }
+        return toValidInstant(date, true);
+    }
 
-		Instant instant = date.toInstant();
-		if (instant.isBefore(START) || instant.isAfter(END)) {
-			return now;
-		}
+    private String buildEntryUrl(SyndFeed feed, String feedUrl, SyndEntry item) {
+        String url = StringUtils.trimToNull(StringUtils.normalizeSpace(item.getLink()));
+        if (url == null || Urls.isAbsolute(url)) {
+            // url is absolute, nothing to do
+            return url;
+        }
 
-		if (instant.isAfter(now)) {
-			return now;
-		}
-		return instant;
-	}
+        // url is relative, trying to resolve it
+        String feedLink = StringUtils.trimToNull(StringUtils.normalizeSpace(feed.getLink()));
+        return Urls.toAbsolute(url, feedLink, feedUrl);
+    }
 
-	private String getContent(SyndEntry item) {
-		String content;
-		if (item.getContents().isEmpty()) {
-			content = item.getDescription() == null ? null : item.getDescription().getValue();
-		} else {
-			content = item.getContents().stream().map(SyndContent::getValue).collect(Collectors.joining(System.lineSeparator()));
-		}
-		return StringUtils.trimToNull(content);
-	}
+    private Instant toValidInstant(Date date, boolean nullToNow) {
+        Instant now = Instant.now();
+        if (date == null) {
+            return nullToNow ? now : null;
+        }
 
-	private String getTitle(SyndEntry item) {
-		String title = item.getTitle();
-		if (StringUtils.isBlank(title)) {
-			Date date = item.getPublishedDate();
-			if (date != null) {
-				title = DateFormat.getInstance().format(date);
-			} else {
-				title = "(no title)";
-			}
-		}
-		return StringUtils.trimToNull(title);
-	}
+        Instant instant = date.toInstant();
+        if (instant.isBefore(START) || instant.isAfter(END)) {
+            return now;
+        }
 
-	private Media buildMedia(SyndEntry item) {
-		MediaEntryModule module = (MediaEntryModule) item.getModule(MediaModule.URI);
-		if (module == null) {
-			return null;
-		}
+        if (instant.isAfter(now)) {
+            return now;
+        }
+        return instant;
+    }
 
-		Media media = buildMedia(module.getMetadata());
-		if (media == null && ArrayUtils.isNotEmpty(module.getMediaGroups())) {
-			MediaGroup group = module.getMediaGroups()[0];
-			media = buildMedia(group.getMetadata());
-		}
+    private String getContent(SyndEntry item) {
+        String content;
+        if (item.getContents().isEmpty()) {
+            content = item.getDescription() == null ? null : item.getDescription().getValue();
+        } else {
+            content =
+                    item.getContents().stream()
+                            .map(SyndContent::getValue)
+                            .collect(Collectors.joining(System.lineSeparator()));
+        }
+        return StringUtils.trimToNull(content);
+    }
 
-		return media;
-	}
+    private String getTitle(SyndEntry item) {
+        String title = item.getTitle();
+        if (StringUtils.isBlank(title)) {
+            Date date = item.getPublishedDate();
+            if (date != null) {
+                title = DateFormat.getInstance().format(date);
+            } else {
+                title = "(no title)";
+            }
+        }
+        return StringUtils.trimToNull(title);
+    }
 
-	private Media buildMedia(Metadata metadata) {
-		if (metadata == null) {
-			return null;
-		}
+    private Media buildMedia(SyndEntry item) {
+        MediaEntryModule module = (MediaEntryModule) item.getModule(MediaModule.URI);
+        if (module == null) {
+            return null;
+        }
 
-		String description = metadata.getDescription();
+        Media media = buildMedia(module.getMetadata());
+        if (media == null && ArrayUtils.isNotEmpty(module.getMediaGroups())) {
+            MediaGroup group = module.getMediaGroups()[0];
+            media = buildMedia(group.getMetadata());
+        }
 
-		String thumbnailUrl = null;
-		Integer thumbnailWidth = null;
-		Integer thumbnailHeight = null;
-		if (ArrayUtils.isNotEmpty(metadata.getThumbnail())) {
-			Thumbnail thumbnail = metadata.getThumbnail()[0];
-			thumbnailWidth = thumbnail.getWidth();
-			thumbnailHeight = thumbnail.getHeight();
-			if (thumbnail.getUrl() != null) {
-				thumbnailUrl = thumbnail.getUrl().toString();
-			}
-		}
+        return media;
+    }
 
-		if (description == null && thumbnailUrl == null) {
-			return null;
-		}
+    private Media buildMedia(Metadata metadata) {
+        if (metadata == null) {
+            return null;
+        }
 
-		return new Media(description, thumbnailUrl, thumbnailWidth, thumbnailHeight);
-	}
+        String description = metadata.getDescription();
 
-	private Long averageTimeBetweenEntries(List<Entry> entries) {
-		if (entries.isEmpty() || entries.size() == 1) {
-			return null;
-		}
+        String thumbnailUrl = null;
+        Integer thumbnailWidth = null;
+        Integer thumbnailHeight = null;
+        if (ArrayUtils.isNotEmpty(metadata.getThumbnail())) {
+            Thumbnail thumbnail = metadata.getThumbnail()[0];
+            thumbnailWidth = thumbnail.getWidth();
+            thumbnailHeight = thumbnail.getHeight();
+            if (thumbnail.getUrl() != null) {
+                thumbnailUrl = thumbnail.getUrl().toString();
+            }
+        }
 
-		SummaryStatistics stats = new SummaryStatistics();
-		for (int i = 0; i < entries.size() - 1; i++) {
-			long diff = Math.abs(entries.get(i).published().toEpochMilli() - entries.get(i + 1).published().toEpochMilli());
-			stats.addValue(diff);
-		}
-		return (long) stats.getMean();
-	}
+        if (description == null && thumbnailUrl == null) {
+            return null;
+        }
 
-	public static class FeedParsingException extends Exception {
-		private static final long serialVersionUID = 1L;
+        return new Media(description, Urls.sanitize(thumbnailUrl), thumbnailWidth, thumbnailHeight);
+    }
 
-		public FeedParsingException(String message) {
-			super(message);
-		}
+    private Long averageTimeBetweenEntries(List<Entry> entries) {
+        if (entries.isEmpty() || entries.size() == 1) {
+            return null;
+        }
 
-		public FeedParsingException(String message, Throwable cause) {
-			super(message, cause);
-		}
-	}
+        SummaryStatistics stats = new SummaryStatistics();
+        for (int i = 0; i < entries.size() - 1; i++) {
+            long diff =
+                    Math.abs(
+                            entries.get(i).published().toEpochMilli()
+                                    - entries.get(i + 1).published().toEpochMilli());
+            stats.addValue(diff);
+        }
+        return (long) stats.getMean();
+    }
 
+    public static class FeedParsingException extends Exception {
+        private static final long serialVersionUID = 1L;
+
+        public FeedParsingException(String message) {
+            super(message);
+        }
+
+        public FeedParsingException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
 }

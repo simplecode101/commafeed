@@ -28,6 +28,9 @@ export interface Subscription {
     position: number
     newestItemTime?: number
     filter?: string
+    filterLegacy?: string
+    pushNotificationsEnabled: boolean
+    autoMarkAsReadAfterDays?: number
 }
 
 export interface Category {
@@ -109,6 +112,8 @@ export interface FeedModificationRequest {
     categoryId?: string
     position?: number
     filter?: string
+    pushNotificationsEnabled: boolean
+    autoMarkAsReadAfterDays?: number
 }
 
 export interface GetEntriesRequest {
@@ -196,6 +201,12 @@ export interface PasswordResetRequest {
     email: string
 }
 
+export interface PasswordResetConfirmationRequest {
+    email: string
+    token: string
+    password: string
+}
+
 export interface ProfileModificationRequest {
     currentPassword: string
     email: string
@@ -209,17 +220,27 @@ export interface RegistrationRequest {
     email: string
 }
 
+export interface InitialSetupRequest {
+    name: string
+    password: string
+    email?: string
+}
+
 export interface ServerInfo {
     announcement?: string
     version: string
     gitCommit: string
     allowRegistrations: boolean
+    emailAddressRequired: boolean
     smtpEnabled: boolean
     demoAccountEnabled: boolean
     websocketEnabled: boolean
     websocketPingInterval: number
     treeReloadInterval: number
     forceRefreshCooldownDuration: number
+    initialSetupRequired: boolean
+    minimumPasswordLength: number
+    pushNotificationsEnabled: boolean
 }
 
 export interface SharingSettings {
@@ -228,13 +249,22 @@ export interface SharingSettings {
     facebook: boolean
     twitter: boolean
     tumblr: boolean
-    pocket: boolean
     instapaper: boolean
     buffer: boolean
 }
 
+export type PushNotificationType = "ntfy" | "gotify" | "pushover"
+
+export interface PushNotificationSettings {
+    type?: PushNotificationType
+    serverUrl?: string
+    userId?: string
+    userSecret?: string
+    topic?: string
+}
+
 export interface Settings {
-    language: string
+    language?: string
     readingMode: ReadingMode
     readingOrder: ReadingOrder
     showRead: boolean
@@ -252,8 +282,10 @@ export interface Settings {
     mobileFooter: boolean
     unreadCountTitle: boolean
     unreadCountFavicon: boolean
+    disablePullToRefresh: boolean
     primaryColor?: string
     sharingSettings: SharingSettings
+    pushNotificationSettings: PushNotificationSettings
 }
 
 export interface LocalSettings {
@@ -265,7 +297,6 @@ export interface LocalSettings {
 
 export interface StarRequest {
     id: string
-    feedId: number
     starred: boolean
 }
 
@@ -305,4 +336,11 @@ export interface AdminSaveUserRequest {
 export interface AuthenticationError {
     message: string
     allowRegistrations: boolean
+}
+
+export type CommaFeedExceptionType = "WRONG_USERNAME_OR_PASSWORD"
+
+export interface CommaFeedApplicationError {
+    type: CommaFeedExceptionType
+    message: string
 }

@@ -8,9 +8,11 @@ import { Constants } from "@/app/constants"
 import type { EntrySourceType } from "@/app/entries/slice"
 import { loadEntries } from "@/app/entries/thunks"
 import { redirectToCategoryDetails, redirectToFeedDetails, redirectToTagDetails } from "@/app/redirect/thunks"
-import { useAppDispatch, useAppSelector } from "@/app/store"
-import { flattenCategoryTree } from "@/app/utils"
+import { useAppDispatch, useAppSelector, useShallowEqualAppSelector } from "@/app/store"
+import { categoryHasNewEntries, categoryUnreadCount, flattenCategoryTree } from "@/app/utils"
 import { FeedEntries } from "@/components/content/FeedEntries"
+import { UnreadCount } from "@/components/sidebar/UnreadCount"
+import { useMobile } from "@/hooks/useMobile"
 import { tss } from "@/tss"
 
 function NoSubscriptionHelp() {
@@ -33,6 +35,12 @@ const useStyles = tss.create(() => ({
     sourceWebsiteLink: {
         color: "inherit",
         textDecoration: "none",
+        overflow: "hidden",
+    },
+    titleText: {
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
     },
 }))
 
@@ -48,6 +56,33 @@ export function FeedEntriesPage(props: Readonly<FeedEntriesPageProps>) {
     const sourceLabel = useAppSelector(state => state.entries.sourceLabel)
     const sourceWebsiteUrl = useAppSelector(state => state.entries.sourceWebsiteUrl)
     const hasMore = useAppSelector(state => state.entries.hasMore)
+    const mobile = useMobile()
+    const sidebarVisible = useAppSelector(state => state.tree.sidebarVisible)
+    const { unreadCount, hasNewEntries } = useShallowEqualAppSelector(state => {
+        const root = state.tree.rootCategory
+        if (!root) return { unreadCount: 0, hasNewEntries: false }
+
+        if (props.sourceType === "category") {
+            const category = id === Constants.categories.all.id ? root : flattenCategoryTree(root).find(c => c.id === id)
+            return {
+                unreadCount: categoryUnreadCount(category),
+                hasNewEntries: categoryHasNewEntries(category),
+            }
+        }
+
+        if (props.sourceType === "feed") {
+            const feed = flattenCategoryTree(root)
+                .flatMap(c => c.feeds)
+                .find(f => f.id === +id)
+            return {
+                unreadCount: feed?.unread ?? 0,
+                hasNewEntries: !!feed?.hasNewEntries,
+            }
+        }
+
+        return { unreadCount: 0, hasNewEntries: false }
+    })
+    const showUnreadCount = mobile || !sidebarVisible
     const dispatch = useAppDispatch()
 
     let title: React.ReactNode = sourceLabel
@@ -89,16 +124,23 @@ export function FeedEntriesPage(props: Readonly<FeedEntriesPageProps>) {
     return (
         // add some room at the bottom of the page in order to be able to scroll the current entry at the top of the page when expanding
         <Box mb={viewport.height * 0.7}>
-            <Group gap="xl" className="cf-entries-title">
+            <Group className="cf-entries-title" wrap="nowrap">
                 {sourceWebsiteUrl && (
                     <a href={sourceWebsiteUrl} target="_blank" rel="noreferrer" className={classes.sourceWebsiteLink}>
-                        <Title order={3}>{title}</Title>
+                        <Title order={3} className={classes.titleText}>
+                            {title}
+                        </Title>
                     </a>
                 )}
-                {!sourceWebsiteUrl && <Title order={3}>{title}</Title>}
+                {!sourceWebsiteUrl && (
+                    <Title order={3} className={classes.titleText}>
+                        {title}
+                    </Title>
+                )}
                 <ActionIcon onClick={titleClicked} variant="subtle" color={theme.primaryColor}>
                     <TbEdit size={18} />
                 </ActionIcon>
+                {showUnreadCount && <UnreadCount unreadCount={unreadCount} showIndicator={hasNewEntries} />}
             </Group>
 
             <FeedEntries />

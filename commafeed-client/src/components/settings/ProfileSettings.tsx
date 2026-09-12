@@ -1,4 +1,3 @@
-import { msg } from "@lingui/core/macro"
 import { useLingui } from "@lingui/react"
 import { Trans } from "@lingui/react/macro"
 import { Anchor, Box, Button, Checkbox, Divider, Group, Input, PasswordInput, Stack, Text, TextInput } from "@mantine/core"
@@ -13,6 +12,7 @@ import { useAppDispatch, useAppSelector } from "@/app/store"
 import type { ProfileModificationRequest } from "@/app/types"
 import { reloadProfile } from "@/app/user/thunks"
 import { Alert } from "@/components/Alert"
+import { useValidationRules } from "@/hooks/useValidationRules"
 
 interface FormData extends ProfileModificationRequest {
     newPasswordConfirmation?: string
@@ -20,13 +20,17 @@ interface FormData extends ProfileModificationRequest {
 
 export function ProfileSettings() {
     const profile = useAppSelector(state => state.user.profile)
+    const serverInfos = useAppSelector(state => state.server.serverInfos)
     const dispatch = useAppDispatch()
     const { _ } = useLingui()
+    const validationRules = useValidationRules()
 
     const form = useForm<FormData>({
         validate: {
-            newPasswordConfirmation: (value, values) => (value !== values.newPassword ? _(msg`Passwords do not match`) : null),
+            newPassword: validationRules.password,
+            newPasswordConfirmation: (value, values) => validationRules.passwordConfirmation(value, values.newPassword),
         },
+        validateInputOnChange: true,
     })
     const { setValues } = form
 
@@ -87,8 +91,8 @@ export function ProfileSettings() {
                         label={<Trans>API key</Trans>}
                         description={
                             <Trans>
-                                This is your API key. It can be used for some read-only API operations and grants access to the Fever API.
-                                Use the form at the bottom of the page to generate a new API key
+                                This is your API key. It can be used for some read-only API operations and grants access to the Fever API
+                                and the Google Reader API. Use the form at the bottom of the page to generate a new API key
                             </Trans>
                         }
                         readOnly
@@ -126,6 +130,22 @@ export function ProfileSettings() {
                         </Box>
                     </Input.Wrapper>
 
+                    <Input.Wrapper
+                        label={<Trans>Google Reader API</Trans>}
+                        description={
+                            <Trans>
+                                CommaFeed is compatible with the Google Reader API. Use the following URL in your Google Reader-compatible
+                                mobile client. Login with your username and your <u>API key</u>.
+                            </Trans>
+                        }
+                    >
+                        <Box>
+                            <Anchor href="rest/googlereader" target="_blank">
+                                <Trans>Google Reader API URL</Trans>
+                            </Anchor>
+                        </Box>
+                    </Input.Wrapper>
+
                     <Divider />
 
                     <PasswordInput
@@ -134,7 +154,12 @@ export function ProfileSettings() {
                         required
                         {...form.getInputProps("currentPassword")}
                     />
-                    <TextInput type="email" label={<Trans>E-mail</Trans>} {...form.getInputProps("email")} required />
+                    <TextInput
+                        type="email"
+                        label={<Trans>E-mail</Trans>}
+                        {...form.getInputProps("email")}
+                        required={serverInfos?.emailAddressRequired}
+                    />
                     <PasswordInput
                         label={<Trans>New password</Trans>}
                         description={<Trans>Changing password will generate a new API key</Trans>}

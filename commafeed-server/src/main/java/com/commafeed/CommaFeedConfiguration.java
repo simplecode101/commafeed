@@ -1,12 +1,5 @@
 package com.commafeed;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Optional;
-
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Positive;
-
 import com.commafeed.backend.feed.FeedRefreshIntervalCalculator;
 
 import io.quarkus.runtime.annotations.ConfigDocSection;
@@ -16,346 +9,362 @@ import io.quarkus.runtime.configuration.MemorySize;
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Optional;
+
 /**
  * CommaFeed configuration
  *
- * Default values are for production, they can be overridden in application.properties for other profiles
+ * <p>Default values are for production, they can be overridden in application.properties for other
+ * profiles
  */
 @ConfigMapping(prefix = "commafeed")
 @ConfigRoot(phase = ConfigPhase.RUN_TIME)
 public interface CommaFeedConfiguration {
-	/**
-	 * Whether to expose a robots.txt file that disallows web crawlers and search engine indexers.
-	 */
-	@WithDefault("true")
-	boolean hideFromWebCrawlers();
+    /**
+     * Whether to expose a robots.txt file that disallows web crawlers and search engine indexers.
+     */
+    @WithDefault("true")
+    boolean hideFromWebCrawlers();
 
-	/**
-	 * If enabled, images in feed entries will be proxied through the server instead of accessed directly by the browser.
-	 * 
-	 * This is useful if commafeed is accessed through a restricting proxy that blocks some feeds that are followed.
-	 */
-	@WithDefault("false")
-	boolean imageProxyEnabled();
+    /**
+     * If enabled, images in feed entries will be proxied through the server instead of accessed
+     * directly by the browser.
+     *
+     * <p>This is useful if commafeed is accessed through a restricting proxy that blocks some feeds
+     * that are followed.
+     */
+    @WithDefault("false")
+    boolean imageProxyEnabled();
 
-	/**
-	 * Enable password recovery via email.
-	 *
-	 * Quarkus mailer will need to be configured.
-	 */
-	@WithDefault("false")
-	boolean passwordRecoveryEnabled();
+    /**
+     * Enable password recovery via email.
+     *
+     * <p>Quarkus mailer will need to be configured.
+     */
+    @WithDefault("false")
+    boolean passwordRecoveryEnabled();
 
-	/**
-	 * Message displayed in a notification at the bottom of the page.
-	 */
-	Optional<String> announcement();
+    /**
+     * The base URL of the application to use in the password recovery link in the email. We can't
+     * use the URL sent by the browser of the user because of malicious Host header injection
+     * attacks.
+     */
+    Optional<String> passwordRecoveryPublicBaseUrl();
 
-	/**
-	 * Google Auth key for fetching Youtube channel favicons.
-	 */
-	Optional<String> googleAuthKey();
+    /** Message displayed in a notification at the bottom of the page. */
+    Optional<String> announcement();
 
-	/**
-	 * HTTP client configuration
-	 */
-	@ConfigDocSection
-	HttpClient httpClient();
+    /** Google Auth key for fetching Youtube channel favicons. */
+    Optional<String> googleAuthKey();
 
-	/**
-	 * Feed refresh engine settings.
-	 */
-	@ConfigDocSection
-	FeedRefresh feedRefresh();
+    /** HTTP client configuration */
+    @ConfigDocSection
+    HttpClient httpClient();
 
-	/**
-	 * Database settings.
-	 */
-	@ConfigDocSection
-	Database database();
+    /** Feed refresh engine settings. */
+    @ConfigDocSection
+    FeedRefresh feedRefresh();
 
-	/**
-	 * Users settings.
-	 */
-	@ConfigDocSection
-	Users users();
+    /** Push notification settings. */
+    @ConfigDocSection
+    PushNotifications pushNotifications();
 
-	/**
-	 * Websocket settings.
-	 */
-	@ConfigDocSection
-	Websocket websocket();
+    /** Database settings. */
+    @ConfigDocSection
+    Database database();
 
-	interface HttpClient {
-		/**
-		 * User-Agent string that will be used by the http client, leave empty for the default one.
-		 */
-		Optional<String> userAgent();
+    /** Users settings. */
+    @ConfigDocSection
+    Users users();
 
-		/**
-		 * Time to wait for a connection to be established.
-		 */
-		@WithDefault("5s")
-		Duration connectTimeout();
+    /** Websocket settings. */
+    @ConfigDocSection
+    Websocket websocket();
 
-		/**
-		 * Time to wait for SSL handshake to complete.
-		 */
-		@WithDefault("5s")
-		Duration sslHandshakeTimeout();
+    /**
+     * Duration to wait for the feed refresh engine and the task scheduler to stop when the
+     * application is shutting down.
+     */
+    @WithDefault("2s")
+    Duration shutdownTimeout();
 
-		/**
-		 * Time to wait between two packets before timeout.
-		 */
-		@WithDefault("10s")
-		Duration socketTimeout();
+    interface HttpClient {
+        /**
+         * User-Agent string that will be used by the http client, leave empty for the default one.
+         */
+        Optional<String> userAgent();
 
-		/**
-		 * Time to wait for the full response to be received.
-		 */
-		@WithDefault("10s")
-		Duration responseTimeout();
+        /** Time to wait for a connection to be established. */
+        @WithDefault("5s")
+        Duration connectTimeout();
 
-		/**
-		 * Time to live for a connection in the pool.
-		 */
-		@WithDefault("30s")
-		Duration connectionTimeToLive();
+        /** Time to wait for SSL handshake to complete. */
+        @WithDefault("5s")
+        Duration sslHandshakeTimeout();
 
-		/**
-		 * Time between eviction runs for idle connections.
-		 */
-		@WithDefault("1m")
-		Duration idleConnectionsEvictionInterval();
+        /** Time to wait between two packets before timeout. */
+        @WithDefault("10s")
+        Duration socketTimeout();
 
-		/**
-		 * If a feed is larger than this, it will be discarded to prevent memory issues while parsing the feed.
-		 */
-		@WithDefault("5M")
-		MemorySize maxResponseSize();
+        /** Time to wait for the full response to be received. */
+        @WithDefault("10s")
+        Duration responseTimeout();
 
-		/**
-		 * Prevent access to local addresses to mitigate server-side request forgery (SSRF) attacks, which could potentially expose internal
-		 * resources.
-		 *
-		 * You may want to disable this if you subscribe to feeds that are only available on your local network and you trust all users of
-		 * your CommaFeed instance.
-		 */
-		@WithDefault("true")
-		boolean blockLocalAddresses();
+        /** Time to live for a connection in the pool. */
+        @WithDefault("30s")
+        Duration connectionTimeToLive();
 
-		/**
-		 * HTTP client cache configuration
-		 */
-		@ConfigDocSection
-		HttpClientCache cache();
-	}
+        /** Time between eviction runs for idle connections. */
+        @WithDefault("1m")
+        Duration idleConnectionsEvictionInterval();
 
-	interface HttpClientCache {
-		/**
-		 * Whether to enable the cache. This cache is used to avoid spamming feeds in short bursts (e.g. when subscribing to a feed for the
-		 * first time or when clicking "fetch all my feeds now").
-		 */
-		@WithDefault("true")
-		boolean enabled();
+        /**
+         * If a feed is larger than this, it will be discarded to prevent memory issues while
+         * parsing the feed.
+         */
+        @WithDefault("5M")
+        MemorySize maxResponseSize();
 
-		/**
-		 * Maximum amount of memory the cache can use.
-		 */
-		@WithDefault("10M")
-		MemorySize maximumMemorySize();
+        /**
+         * Prevent access to local addresses to mitigate server-side request forgery (SSRF) attacks,
+         * which could potentially expose internal resources.
+         *
+         * <p>You may want to enable this if you host a public instance of CommaFeed with
+         * registrations open.
+         */
+        @WithDefault("true")
+        boolean blockLocalAddresses();
 
-		/**
-		 * Duration after which an entry is removed from the cache.
-		 */
-		@WithDefault("1m")
-		Duration expiration();
-	}
+        /** HTTP client cache configuration */
+        @ConfigDocSection
+        HttpClientCache cache();
+    }
 
-	interface FeedRefresh {
-		/**
-		 * Default amount of time CommaFeed will wait before refreshing a feed.
-		 */
-		@WithDefault("5m")
-		Duration interval();
+    interface HttpClientCache {
+        /**
+         * Whether to enable the cache. This cache is used to avoid spamming feeds in short bursts
+         * (e.g. when subscribing to a feed for the first time or when clicking "fetch all my feeds
+         * now").
+         */
+        @WithDefault("true")
+        boolean enabled();
 
-		/**
-		 * Maximum amount of time CommaFeed will wait before refreshing a feed. This is used as an upper bound when:
-		 *
-		 * <ul>
-		 * <li>an error occurs while refreshing a feed and we're backing off exponentially</li>
-		 * <li>we receive a Cache-Control header from the feed</li>
-		 * <li>we receive a Retry-After header from the feed</li>
-		 * </ul>
-		 */
-		@WithDefault("4h")
-		Duration maxInterval();
+        /** Maximum amount of memory the cache can use. */
+        @WithDefault("10M")
+        MemorySize maximumMemorySize();
 
-		/**
-		 * If enabled, CommaFeed will calculate the next refresh time based on the feed's average time between entries and the time since
-		 * the last entry was published. The interval will be sometimes between the default refresh interval
-		 * (`commafeed.feed-refresh.interval`) and the maximum refresh interval (`commafeed.feed-refresh.max-interval`).
-		 * 
-		 * See {@link FeedRefreshIntervalCalculator} for details.
-		 */
-		@WithDefault("true")
-		boolean intervalEmpirical();
+        /** Duration after which an entry is removed from the cache. */
+        @WithDefault("1m")
+        Duration expiration();
+    }
 
-		/**
-		 * Feed refresh engine error handling settings.
-		 */
-		@ConfigDocSection
-		FeedRefreshErrorHandling errors();
+    interface FeedRefresh {
+        /** Default amount of time CommaFeed will wait before refreshing a feed. */
+        @WithDefault("5m")
+        Duration interval();
 
-		/**
-		 * Amount of http threads used to fetch feeds.
-		 */
-		@Min(1)
-		@WithDefault("3")
-		int httpThreads();
+        /**
+         * Maximum amount of time CommaFeed will wait before refreshing a feed. This is used as an
+         * upper bound when:
+         *
+         * <ul>
+         *   <li>an error occurs while refreshing a feed and we're backing off exponentially
+         *   <li>we receive a Cache-Control header from the feed
+         *   <li>we receive a Retry-After header from the feed
+         * </ul>
+         */
+        @WithDefault("4h")
+        Duration maxInterval();
 
-		/**
-		 * Amount of threads used to insert new entries in the database.
-		 */
-		@Min(1)
-		@WithDefault("1")
-		int databaseThreads();
+        /**
+         * If enabled, CommaFeed will calculate the next refresh time based on the feed's average
+         * time between entries and the time since the last entry was published. The interval will
+         * be sometimes between the default refresh interval (`commafeed.feed-refresh.interval`) and
+         * the maximum refresh interval (`commafeed.feed-refresh.max-interval`).
+         *
+         * <p>See {@link FeedRefreshIntervalCalculator} for details.
+         */
+        @WithDefault("true")
+        boolean intervalEmpirical();
 
-		/**
-		 * Duration after which a user is considered inactive. Feeds for inactive users are not refreshed until they log in again.
-		 *
-		 * 0 to disable.
-		 */
-		@WithDefault("0")
-		Duration userInactivityPeriod();
+        /** Feed refresh engine error handling settings. */
+        @ConfigDocSection
+        FeedRefreshErrorHandling errors();
 
-		/**
-		 * Duration after which the evaluation of a filtering expresion to mark an entry as read is considered to have timed out.
-		 */
-		@WithDefault("500ms")
-		Duration filteringExpressionEvaluationTimeout();
+        /** Amount of http threads used to fetch feeds. */
+        @Min(1)
+        @WithDefault("3")
+        int httpThreads();
 
-		/**
-		 * Duration after which the "Fetch all my feeds now" action is available again after use to avoid spamming feeds.
-		 */
-		@WithDefault("0")
-		Duration forceRefreshCooldownDuration();
-	}
+        /** Amount of threads used to insert new entries in the database. */
+        @Min(1)
+        @WithDefault("1")
+        int databaseThreads();
 
-	interface FeedRefreshErrorHandling {
-		/**
-		 * Number of retries before backoff is applied.
-		 */
-		@Min(0)
-		@WithDefault("3")
-		int retriesBeforeBackoff();
+        /**
+         * Duration after which a user is considered inactive. Feeds for inactive users are not
+         * refreshed until they log in again.
+         *
+         * <p>0 to disable.
+         */
+        @WithDefault("0")
+        Duration userInactivityPeriod();
 
-		/**
-		 * Duration to wait before retrying after an error. Will be multiplied by the number of errors since the last successful fetch.
-		 */
-		@WithDefault("1h")
-		Duration backoffInterval();
-	}
+        /**
+         * Duration after which the evaluation of a filtering expresion to mark an entry as read is
+         * considered to have timed out.
+         */
+        @WithDefault("500ms")
+        Duration filteringExpressionEvaluationTimeout();
 
-	interface Database {
-		/**
-		 * Timeout applied to all database queries.
-		 *
-		 * 0 to disable.
-		 */
-		@WithDefault("0")
-		Duration queryTimeout();
+        /**
+         * Duration after which the "Fetch all my feeds now" action is available again after use to
+         * avoid spamming feeds.
+         */
+        @WithDefault("0")
+        Duration forceRefreshCooldownDuration();
+    }
 
-		/**
-		 * Database cleanup settings.
-		 */
-		@ConfigDocSection
-		Cleanup cleanup();
+    interface PushNotifications {
+        /** Whether to enable push notifications to notify users of new entries in their feeds. */
+        @WithDefault("true")
+        boolean enabled();
 
-		interface Cleanup {
-			/**
-			 * Maximum age of feed entries in the database. Older entries will be deleted.
-			 *
-			 * 0 to disable.
-			 */
-			@WithDefault("365d")
-			Duration entriesMaxAge();
+        /** Amount of threads used to send external notifications about new entries. */
+        @Min(1)
+        @WithDefault("5")
+        int threads();
 
-			/**
-			 * Maximum age of feed entry statuses (read/unread) in the database. Older statuses will be deleted.
-			 *
-			 * 0 to disable.
-			 */
-			@WithDefault("0")
-			Duration statusesMaxAge();
+        /**
+         * Maximum amount of notifications that can be queued before new notifications are
+         * discarded.
+         */
+        @Min(1)
+        @WithDefault("100")
+        int queueCapacity();
+    }
 
-			/**
-			 * Maximum number of entries per feed to keep in the database.
-			 *
-			 * 0 to disable.
-			 */
-			@WithDefault("500")
-			int maxFeedCapacity();
+    interface FeedRefreshErrorHandling {
+        /** Number of retries before backoff is applied. */
+        @Min(0)
+        @WithDefault("3")
+        int retriesBeforeBackoff();
 
-			/**
-			 * Limit the number of feeds a user can subscribe to.
-			 *
-			 * 0 to disable.
-			 */
-			@WithDefault("0")
-			int maxFeedsPerUser();
+        /**
+         * Duration to wait before retrying after an error. Will be multiplied by the number of
+         * errors since the last successful fetch.
+         */
+        @WithDefault("1h")
+        Duration backoffInterval();
+    }
 
-			/**
-			 * Rows to delete per query while cleaning up old entries.
-			 */
-			@Positive
-			@WithDefault("100")
-			int batchSize();
+    interface Database {
+        /**
+         * Timeout applied to all database queries.
+         *
+         * <p>0 to disable.
+         */
+        @WithDefault("0")
+        Duration queryTimeout();
 
-			default Instant statusesInstantThreshold() {
-				return statusesMaxAge().toMillis() > 0 ? Instant.now().minus(statusesMaxAge()) : null;
-			}
-		}
-	}
+        /** Database cleanup settings. */
+        @ConfigDocSection
+        Cleanup cleanup();
 
-	interface Users {
-		/**
-		 * Whether to let users create accounts for themselves.
-		 */
-		@WithDefault("false")
-		boolean allowRegistrations();
+        interface Cleanup {
+            /**
+             * Maximum age of feed entries in the database. Older entries will be deleted.
+             *
+             * <p>0 to disable.
+             */
+            @WithDefault("365d")
+            Duration entriesMaxAge();
 
-		/**
-		 * Whether to enable strict password validation (1 uppercase char, 1 lowercase char, 1 digit, 1 special char).
-		 */
-		@WithDefault("true")
-		boolean strictPasswordPolicy();
+            /**
+             * Maximum age of feed entry statuses (read/unread) in the database. Older statuses will
+             * be deleted.
+             *
+             * <p>0 to disable.
+             */
+            @WithDefault("0")
+            Duration statusesMaxAge();
 
-		/**
-		 * Whether to create a demo account the first time the app starts.
-		 */
-		@WithDefault("false")
-		boolean createDemoAccount();
-	}
+            /**
+             * Maximum number of entries per feed to keep in the database.
+             *
+             * <p>0 to disable.
+             */
+            @WithDefault("500")
+            int maxFeedCapacity();
 
-	interface Websocket {
-		/**
-		 * Enable websocket connection so the server can notify web clients that there are new entries for feeds.
-		 */
-		@WithDefault("true")
-		boolean enabled();
+            /**
+             * Limit the number of feeds a user can subscribe to.
+             *
+             * <p>0 to disable.
+             */
+            @WithDefault("0")
+            int maxFeedsPerUser();
 
-		/**
-		 * Interval at which the client will send a ping message on the websocket to keep the connection alive.
-		 */
-		@WithDefault("15m")
-		Duration pingInterval();
+            /** Rows to delete per query while cleaning up old entries. */
+            @Positive
+            @WithDefault("100")
+            int batchSize();
 
-		/**
-		 * If the websocket connection is disabled or the connection is lost, the client will reload the feed tree at this interval.
-		 */
-		@WithDefault("30s")
-		Duration treeReloadInterval();
-	}
+            /** Whether to keep starred entries when cleaning up old entries. */
+            @WithDefault("true")
+            boolean keepStarredEntries();
 
+            default Instant statusesInstantThreshold() {
+                return statusesMaxAge().toMillis() > 0
+                        ? Instant.now().minus(statusesMaxAge())
+                        : null;
+            }
+        }
+    }
+
+    interface Users {
+        /** Whether to let users create accounts for themselves. */
+        @WithDefault("false")
+        boolean allowRegistrations();
+
+        /** Minimum password length for user accounts. */
+        @WithDefault("4")
+        int minimumPasswordLength();
+
+        /** Whether an email address is required when creating a user account. */
+        @WithDefault("false")
+        boolean emailAddressRequired();
+
+        /** Whether to create a demo account the first time the app starts. */
+        @WithDefault("false")
+        boolean createDemoAccount();
+    }
+
+    interface Websocket {
+        /**
+         * Enable websocket connection so the server can notify web clients that there are new
+         * entries for feeds.
+         */
+        @WithDefault("true")
+        boolean enabled();
+
+        /**
+         * Interval at which the client will send a ping message on the websocket to keep the
+         * connection alive.
+         */
+        @WithDefault("15m")
+        Duration pingInterval();
+
+        /**
+         * If the websocket connection is disabled or the connection is lost, the client will reload
+         * the feed tree at this interval.
+         */
+        @WithDefault("30s")
+        Duration treeReloadInterval();
+    }
 }

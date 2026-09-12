@@ -1,29 +1,38 @@
 package com.commafeed.backend.task;
 
+import com.commafeed.CommaFeedConfiguration;
+import com.google.common.util.concurrent.MoreExecutors;
+
+import io.quarkus.arc.All;
+
+import jakarta.inject.Singleton;
+
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import jakarta.inject.Singleton;
-
-import io.quarkus.arc.All;
-
+@Slf4j
 @Singleton
 public class TaskScheduler {
 
-	private final List<ScheduledTask> tasks;
-	private final ScheduledExecutorService executor;
+    private final List<ScheduledTask> tasks;
+    private final CommaFeedConfiguration config;
 
-	public TaskScheduler(@All List<ScheduledTask> tasks) {
-		this.tasks = tasks;
-		this.executor = Executors.newScheduledThreadPool(tasks.size());
-	}
+    private ScheduledExecutorService executor;
 
-	public void start() {
-		tasks.forEach(task -> task.register(executor));
-	}
+    public TaskScheduler(@All List<ScheduledTask> tasks, CommaFeedConfiguration config) {
+        this.tasks = tasks;
+        this.config = config;
+    }
 
-	public void stop() {
-		executor.shutdownNow();
-	}
+    public void start() {
+        this.executor = Executors.newScheduledThreadPool(tasks.size());
+        this.tasks.forEach(task -> task.register(executor));
+    }
+
+    public void stop() {
+        MoreExecutors.shutdownAndAwaitTermination(executor, config.shutdownTimeout());
+    }
 }

@@ -10,12 +10,14 @@ import { redirectToRootCategory } from "@/app/redirect/thunks"
 import { useAppDispatch, useAppSelector } from "@/app/store"
 import type { RegistrationRequest } from "@/app/types"
 import { Alert } from "@/components/Alert"
+import { useValidationRules } from "@/hooks/useValidationRules"
 import { PageTitle } from "@/pages/PageTitle"
 
 export function RegistrationPage() {
     const serverInfos = useAppSelector(state => state.server.serverInfos)
     const dispatch = useAppDispatch()
     const { _ } = useLingui()
+    const validationRules = useValidationRules()
 
     const form = useForm<RegistrationRequest>({
         initialValues: {
@@ -23,6 +25,10 @@ export function RegistrationPage() {
             password: "",
             email: "",
         },
+        validate: {
+            password: validationRules.password,
+        },
+        validateInputOnChange: true,
     })
 
     const login = useAsyncCallback(client.user.login, {
@@ -72,7 +78,7 @@ export function RegistrationPage() {
                                     placeholder={_(msg`E-mail address`)}
                                     {...form.getInputProps("email")}
                                     size="md"
-                                    required
+                                    required={serverInfos.emailAddressRequired}
                                 />
                                 <PasswordInput
                                     label={<Trans>Password</Trans>}

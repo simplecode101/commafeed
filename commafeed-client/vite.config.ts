@@ -1,29 +1,17 @@
-import { lingui } from "@lingui/vite-plugin"
+import { lingui, linguiTransformerBabelPreset } from "@lingui/vite-plugin"
+import babel from "@rolldown/plugin-babel"
 import react from "@vitejs/plugin-react"
-import { visualizer } from "rollup-plugin-visualizer"
 import { defineConfig } from "vite"
 import checker from "vite-plugin-checker"
-import tsconfigPaths from "vite-tsconfig-paths"
 
-// https://vitejs.dev/config/
 export default defineConfig(() => ({
     plugins: [
-        react({
-            babel: {
-                plugins: [
-                    // support for lingui macros
-                    // needs to be before the react compiler plugin
-                    "@lingui/babel-plugin-lingui-macro",
-                    // react compiler
-                    ["babel-plugin-react-compiler", { target: "19" }],
-                ],
-            },
-        }),
+        babel({ presets: [linguiTransformerBabelPreset()] }),
+        react({ compiler: true }),
         lingui(),
-        tsconfigPaths(),
-        visualizer(),
         checker({
-            typescript: true,
+            // temporary disabled until TypeScript 7 exposes a stable api
+            // typescript: true,
             biome: {
                 command: "check",
                 flags: "--error-on-warnings",
@@ -45,22 +33,36 @@ export default defineConfig(() => ({
             "/logout": "http://localhost:8083",
         },
     },
-    build: {
-        chunkSizeWarningLimit: 3500,
-        rollupOptions: {
-            output: {
-                manualChunks: id => {
-                    // output mantine as its own chunk because it is quite large
-                    if (id.includes("@mantine")) {
-                        return "mantine"
-                    }
-                },
-            },
-        },
+    resolve: {
+        tsconfigPaths: true,
+    },
+    legacy: {
+        // required for websocket-heartbeat-js
+        inconsistentCjsInterop: true,
     },
     test: {
+        isolate: false,
         environment: "jsdom",
         globals: true,
         setupFiles: "./src/setupTests.ts",
+    },
+    build: {
+        chunkSizeWarningLimit: 4000,
+        rolldownOptions: {
+            checks: {
+                pluginTimings: false,
+            },
+            output: {
+                codeSplitting: {
+                    groups: [
+                        // output mantine as its own chunk because it is quite large
+                        {
+                            name: "mantine",
+                            test: "@mantine",
+                        },
+                    ],
+                },
+            },
+        },
     },
 }))

@@ -1,24 +1,19 @@
 import { i18n } from "@lingui/core"
 import { I18nProvider } from "@lingui/react"
-import { MantineProvider } from "@mantine/core"
+import { MantineProvider, v8CssVariablesResolver } from "@mantine/core"
 import { ModalsProvider } from "@mantine/modals"
 import { Notifications } from "@mantine/notifications"
 import type React from "react"
-import { useEffect, useState } from "react"
-import { isSafari } from "react-device-detect"
+import { useEffect } from "react"
 import { HashRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom"
-import Tinycon from "tinycon"
 import { Constants } from "@/app/constants"
 import { redirectTo } from "@/app/redirect/slice"
+import { redirectToInitialSetup } from "@/app/redirect/thunks"
 import { reloadServerInfos } from "@/app/server/thunks"
 import { useAppDispatch, useAppSelector } from "@/app/store"
-import { categoryUnreadCount } from "@/app/utils"
-import { DisablePullToRefresh } from "@/components/DisablePullToRefresh"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { Header } from "@/components/header/Header"
 import { Tree } from "@/components/sidebar/Tree"
-import { useAppLoading } from "@/hooks/useAppLoading"
-import { useBrowserExtension } from "@/hooks/useBrowserExtension"
 import { useI18n } from "@/i18n"
 import { AdminUsersPage } from "@/pages/admin/AdminUsersPage"
 import { MetricsPage } from "@/pages/admin/MetricsPage"
@@ -31,8 +26,10 @@ import { FeedEntriesPage } from "@/pages/app/FeedEntriesPage"
 import Layout from "@/pages/app/Layout"
 import { SettingsPage } from "@/pages/app/SettingsPage"
 import { TagDetailsPage } from "@/pages/app/TagDetailsPage"
+import { InitialSetupPage } from "@/pages/auth/InitialSetupPage"
 import { LoginPage } from "@/pages/auth/LoginPage"
 import { PasswordRecoveryPage } from "@/pages/auth/PasswordRecoveryPage"
+import { PasswordResetPage } from "@/pages/auth/PasswordResetPage"
 import { RegistrationPage } from "@/pages/auth/RegistrationPage"
 import { WelcomePage } from "@/pages/WelcomePage"
 
@@ -46,6 +43,8 @@ function Providers(
         <I18nProvider i18n={i18n}>
             <MantineProvider
                 defaultColorScheme="auto"
+                // keep using css variables from mantine v8
+                cssVariablesResolver={v8CssVariablesResolver}
                 theme={{
                     primaryColor: primaryColor,
                     fontFamily: "Open Sans",
@@ -83,9 +82,11 @@ function AppRoutes() {
         <Routes>
             <Route path="/" element={<Navigate to={`/app/category/${Constants.categories.all.id}`} replace />} />
             <Route path="welcome" element={<WelcomePage />} />
+            <Route path="setup" element={<InitialSetupPage />} />
             <Route path="login" element={<LoginPage />} />
             <Route path="register" element={<RegistrationPage />} />
             <Route path="passwordRecovery" element={<PasswordRecoveryPage />} />
+            <Route path="passwordReset" element={<PasswordResetPage />} />
             <Route path="app" element={<Layout header={<Header />} sidebar={<Tree />} sidebarVisible={sidebarVisible} />}>
                 <Route path="category">
                     <Route path=":id" element={<FeedEntriesPage sourceType="category" />} />
@@ -113,6 +114,18 @@ function AppRoutes() {
     )
 }
 
+function InitialSetupHandler() {
+    const serverInfos = useAppSelector(state => state.server.serverInfos)
+    const dispatch = useAppDispatch()
+    useEffect(() => {
+        if (serverInfos?.initialSetupRequired) {
+            dispatch(redirectToInitialSetup())
+        }
+    }, [serverInfos, dispatch])
+
+    return null
+}
+
 function RedirectHandler() {
     const target = useAppSelector(state => state.redirect.to)
     const dispatch = useAppDispatch()
@@ -128,78 +141,8 @@ function RedirectHandler() {
     return null
 }
 
-function UnreadCountTitleHandler({
-    enabled,
-}: Readonly<{
-    enabled?: boolean
-}>) {
-    const root = useAppSelector(state => state.tree.rootCategory)
-    const unreadCount = categoryUnreadCount(root)
-    return <title>{enabled && unreadCount > 0 ? `(${unreadCount}) CommaFeed` : "CommaFeed"}</title>
-}
-
-function UnreadCountFaviconHandler({ enabled }: { enabled?: boolean }) {
-    const root = useAppSelector(state => state.tree.rootCategory)
-    const unreadCount = categoryUnreadCount(root)
-    useEffect(() => {
-        if (enabled && unreadCount > 0) {
-            Tinycon.setBubble(unreadCount)
-        } else {
-            Tinycon.reset()
-        }
-    }, [unreadCount, enabled])
-
-    return null
-}
-
-function BrowserExtensionBadgeUnreadCountHandler() {
-    const root = useAppSelector(state => state.tree.rootCategory)
-    const { setBadgeUnreadCount } = useBrowserExtension()
-    useEffect(() => {
-        if (!root) return
-        const unreadCount = categoryUnreadCount(root)
-        setBadgeUnreadCount(unreadCount)
-    }, [root, setBadgeUnreadCount])
-
-    return null
-}
-
-function CustomJsHandler() {
-    const [scriptLoaded, setScriptLoaded] = useState(false)
-    const { loading } = useAppLoading()
-
-    useEffect(() => {
-        if (scriptLoaded || loading) {
-            return
-        }
-
-        const script = document.createElement("script")
-        script.src = "custom_js.js"
-        script.async = true
-        document.body.appendChild(script)
-
-        setScriptLoaded(true)
-    }, [scriptLoaded, loading])
-
-    return null
-}
-
-function CustomCssHandler() {
-    useEffect(() => {
-        const link = document.createElement("link")
-        link.rel = "stylesheet"
-        link.type = "text/css"
-        link.href = "custom_css.css"
-        document.head.appendChild(link)
-    }, [])
-
-    return null
-}
-
 export function App() {
     useI18n()
-    const unreadCountTitle = useAppSelector(state => state.user.settings?.unreadCountTitle)
-    const unreadCountFavicon = useAppSelector(state => state.user.settings?.unreadCountFavicon)
     const dispatch = useAppDispatch()
 
     useEffect(() => {
@@ -208,19 +151,8 @@ export function App() {
 
     return (
         <Providers>
-            <UnreadCountTitleHandler enabled={unreadCountTitle} />
-            <UnreadCountFaviconHandler enabled={unreadCountFavicon} />
-            <BrowserExtensionBadgeUnreadCountHandler />
-            <CustomJsHandler />
-            <CustomCssHandler />
-
-            {/* disable pull-to-refresh as it messes with vertical scrolling
-                        safari behaves weirdly when overscroll-behavior is set to none so we disable it only for other browsers
-                        https://github.com/Athou/commafeed/issues/1168
-                    */}
-            {!isSafari && <DisablePullToRefresh />}
-
             <HashRouter>
+                <InitialSetupHandler />
                 <RedirectHandler />
                 <AppRoutes />
             </HashRouter>

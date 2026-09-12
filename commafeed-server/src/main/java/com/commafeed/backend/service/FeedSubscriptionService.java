@@ -1,12 +1,5 @@
 package com.commafeed.backend.service;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import jakarta.inject.Singleton;
-
 import com.commafeed.CommaFeedConfiguration;
 import com.commafeed.backend.Urls;
 import com.commafeed.backend.dao.FeedEntryStatusDAO;
@@ -19,114 +12,127 @@ import com.commafeed.backend.model.FeedSubscription;
 import com.commafeed.backend.model.User;
 import com.commafeed.frontend.model.UnreadCount;
 
+import jakarta.inject.Singleton;
+
 import lombok.extern.slf4j.Slf4j;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Singleton
 public class FeedSubscriptionService {
 
-	private final FeedEntryStatusDAO feedEntryStatusDAO;
-	private final FeedSubscriptionDAO feedSubscriptionDAO;
-	private final FeedService feedService;
-	private final FeedRefreshEngine feedRefreshEngine;
-	private final CommaFeedConfiguration config;
+    private final FeedEntryStatusDAO feedEntryStatusDAO;
+    private final FeedSubscriptionDAO feedSubscriptionDAO;
+    private final FeedService feedService;
+    private final FeedRefreshEngine feedRefreshEngine;
+    private final CommaFeedConfiguration config;
 
-	public FeedSubscriptionService(FeedEntryStatusDAO feedEntryStatusDAO, FeedSubscriptionDAO feedSubscriptionDAO, FeedService feedService,
-			FeedRefreshEngine feedRefreshEngine, CommaFeedConfiguration config) {
-		this.feedEntryStatusDAO = feedEntryStatusDAO;
-		this.feedSubscriptionDAO = feedSubscriptionDAO;
-		this.feedService = feedService;
-		this.feedRefreshEngine = feedRefreshEngine;
-		this.config = config;
+    public FeedSubscriptionService(
+            FeedEntryStatusDAO feedEntryStatusDAO,
+            FeedSubscriptionDAO feedSubscriptionDAO,
+            FeedService feedService,
+            FeedRefreshEngine feedRefreshEngine,
+            CommaFeedConfiguration config) {
+        this.feedEntryStatusDAO = feedEntryStatusDAO;
+        this.feedSubscriptionDAO = feedSubscriptionDAO;
+        this.feedService = feedService;
+        this.feedRefreshEngine = feedRefreshEngine;
+        this.config = config;
 
-		// automatically refresh new feeds after they are subscribed to
-		// we need to use this hook because the feed needs to have been persisted before being processed by the feed engine
-		feedSubscriptionDAO.onPostCommitInsert(sub -> {
-			Feed feed = sub.getFeed();
-			if (feed.getDisabledUntil() == null || feed.getDisabledUntil().isBefore(Instant.now())) {
-				feedRefreshEngine.refreshImmediately(feed);
-			}
-		});
-	}
+        // automatically refresh new feeds after they are subscribed to
+        // we need to use this hook because the feed needs to have been persisted before being
+        // processed
+        // by the feed engine
+        feedSubscriptionDAO.onPostCommitInsert(
+                sub -> {
+                    Feed feed = sub.getFeed();
+                    if (feed.getDisabledUntil() == null
+                            || feed.getDisabledUntil().isBefore(Instant.now())) {
+                        feedRefreshEngine.refreshImmediately(feed);
+                    }
+                });
+    }
 
-	public long subscribe(User user, String url, String title) {
-		return subscribe(user, url, title, null, 0);
-	}
+    public long subscribe(
+            User user, String url, String title, FeedCategory category, int position) {
+        Integer maxFeedsPerUser = config.database().cleanup().maxFeedsPerUser();
+        if (maxFeedsPerUser > 0 && feedSubscriptionDAO.count(user) >= maxFeedsPerUser) {
+            String message =
+                    String.format(
+                            "You cannot subscribe to more feeds on this CommaFeed instance (max %s feeds per user)",
+                            maxFeedsPerUser);
+            throw new FeedSubscriptionException(message);
+        }
 
-	public long subscribe(User user, String url, String title, FeedCategory parent) {
-		return subscribe(user, url, title, parent, 0);
-	}
+        Feed feed = feedService.findOrCreate(url);
 
-	public long subscribe(User user, String url, String title, FeedCategory category, int position) {
-		Integer maxFeedsPerUser = config.database().cleanup().maxFeedsPerUser();
-		if (maxFeedsPerUser > 0 && feedSubscriptionDAO.count(user) >= maxFeedsPerUser) {
-			String message = String.format("You cannot subscribe to more feeds on this CommaFeed instance (max %s feeds per user)",
-					maxFeedsPerUser);
-			throw new FeedSubscriptionException(message);
-		}
+        // upgrade feed to https if it was using http
+        if (Urls.isHttp(feed.getUrl()) && Urls.isHttps(url)) {
+            feed.setUrl(url);
+        }
 
-		Feed feed = feedService.findOrCreate(url);
+        FeedSubscription sub = feedSubscriptionDAO.findByFeed(user, feed);
+        if (sub == null) {
+            sub = new FeedSubscription();
+            sub.setFeed(feed);
+            sub.setUser(user);
+        }
+        sub.setCategory(category);
+        sub.setPosition(position);
+        sub.setTitle(FeedUtils.truncate(title, 128));
+        return feedSubscriptionDAO.merge(sub).getId();
+    }
 
-		// upgrade feed to https if it was using http
-		if (Urls.isHttp(feed.getUrl()) && Urls.isHttps(url)) {
-			feed.setUrl(url);
-		}
+    public boolean unsubscribe(User user, Long subId) {
+        FeedSubscription sub = feedSubscriptionDAO.findById(user, subId);
+        if (sub != null) {
+            feedSubscriptionDAO.delete(sub);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-		FeedSubscription sub = feedSubscriptionDAO.findByFeed(user, feed);
-		if (sub == null) {
-			sub = new FeedSubscription();
-			sub.setFeed(feed);
-			sub.setUser(user);
-		}
-		sub.setCategory(category);
-		sub.setPosition(position);
-		sub.setTitle(FeedUtils.truncate(title, 128));
-		return feedSubscriptionDAO.merge(sub).getId();
-	}
+    public void refreshAll(User user) throws ForceFeedRefreshTooSoonException {
+        Instant lastForceRefresh = user.getLastForceRefresh();
+        if (lastForceRefresh != null
+                && lastForceRefresh
+                        .plus(config.feedRefresh().forceRefreshCooldownDuration())
+                        .isAfter(Instant.now())) {
+            throw new ForceFeedRefreshTooSoonException();
+        }
 
-	public boolean unsubscribe(User user, Long subId) {
-		FeedSubscription sub = feedSubscriptionDAO.findById(user, subId);
-		if (sub != null) {
-			feedSubscriptionDAO.delete(sub);
-			return true;
-		} else {
-			return false;
-		}
-	}
+        List<FeedSubscription> subs = feedSubscriptionDAO.findAll(user);
+        for (FeedSubscription sub : subs) {
+            Feed feed = sub.getFeed();
+            feedRefreshEngine.refreshImmediately(feed);
+        }
 
-	public void refreshAll(User user) throws ForceFeedRefreshTooSoonException {
-		Instant lastForceRefresh = user.getLastForceRefresh();
-		if (lastForceRefresh != null && lastForceRefresh.plus(config.feedRefresh().forceRefreshCooldownDuration()).isAfter(Instant.now())) {
-			throw new ForceFeedRefreshTooSoonException();
-		}
+        user.setLastForceRefresh(Instant.now());
+    }
 
-		List<FeedSubscription> subs = feedSubscriptionDAO.findAll(user);
-		for (FeedSubscription sub : subs) {
-			Feed feed = sub.getFeed();
-			feedRefreshEngine.refreshImmediately(feed);
-		}
+    public Map<Long, UnreadCount> getUnreadCount(User user) {
+        return feedSubscriptionDAO.findAll(user).stream()
+                .collect(
+                        Collectors.toMap(
+                                FeedSubscription::getId, feedEntryStatusDAO::getUnreadCount));
+    }
 
-		user.setLastForceRefresh(Instant.now());
-	}
+    @SuppressWarnings("serial")
+    public static class FeedSubscriptionException extends RuntimeException {
+        private FeedSubscriptionException(String msg) {
+            super(msg);
+        }
+    }
 
-	public Map<Long, UnreadCount> getUnreadCount(User user) {
-		return feedSubscriptionDAO.findAll(user)
-				.stream()
-				.collect(Collectors.toMap(FeedSubscription::getId, feedEntryStatusDAO::getUnreadCount));
-	}
-
-	@SuppressWarnings("serial")
-	public static class FeedSubscriptionException extends RuntimeException {
-		private FeedSubscriptionException(String msg) {
-			super(msg);
-		}
-	}
-
-	@SuppressWarnings("serial")
-	public static class ForceFeedRefreshTooSoonException extends Exception {
-		private ForceFeedRefreshTooSoonException() {
-			super();
-		}
-	}
-
+    @SuppressWarnings("serial")
+    public static class ForceFeedRefreshTooSoonException extends Exception {
+        private ForceFeedRefreshTooSoonException() {
+            super();
+        }
+    }
 }

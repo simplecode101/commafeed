@@ -1,3 +1,5 @@
+import { i18n, type MessageDescriptor } from "@lingui/core"
+import { msg } from "@lingui/core/macro"
 import axios, { type AxiosError } from "axios"
 import type {
     AddCategoryRequest,
@@ -6,18 +8,23 @@ import type {
     Category,
     CategoryModificationRequest,
     CollapseRequest,
+    CommaFeedApplicationError,
+    CommaFeedExceptionType,
     Entries,
     FeedInfo,
     FeedInfoRequest,
     FeedModificationRequest,
     GetEntriesPaginatedRequest,
     IDRequest,
+    InitialSetupRequest,
     LoginRequest,
     MarkRequest,
     Metrics,
     MultipleMarkRequest,
+    PasswordResetConfirmationRequest,
     PasswordResetRequest,
     ProfileModificationRequest,
+    PushNotificationSettings,
     RegistrationRequest,
     ServerInfo,
     Settings,
@@ -28,20 +35,25 @@ import type {
     UserModel,
 } from "./types"
 
+const applicationErrorMessages = {
+    WRONG_USERNAME_OR_PASSWORD: msg`Wrong username or password`,
+} satisfies Record<CommaFeedExceptionType, MessageDescriptor>
+
 const axiosInstance = axios.create({ baseURL: "./rest", withCredentials: true })
 axiosInstance.interceptors.response.use(
     response => response,
     error => {
-        if (isAuthenticationError(error)) {
+        if (isAuthenticationError(error) && window.location.hash !== "#/login") {
             const data = error.response?.data
             window.location.hash = data?.allowRegistrations ? "/welcome" : "/login"
+            window.location.reload()
         }
         throw error
     }
 )
 
 function isAuthenticationError(error: unknown): error is AxiosError<AuthenticationError> {
-    return axios.isAxiosError(error) && !!error.response && [401, 403].includes(error.response.status)
+    return axios.isAxiosError(error) && error.response?.status === 401
 }
 
 export const client = {
@@ -93,9 +105,13 @@ export const client = {
             })
         },
         register: async (req: RegistrationRequest) => await axiosInstance.post("user/register", req),
+        initialSetup: async (req: InitialSetupRequest) => await axiosInstance.post("user/initialSetup", req),
         passwordReset: async (req: PasswordResetRequest) => await axiosInstance.post("user/passwordReset", req),
+        passwordResetCallback: async (req: PasswordResetConfirmationRequest) => await axiosInstance.post("user/passwordResetCallback", req),
         getSettings: async () => await axiosInstance.get<Settings>("user/settings"),
         saveSettings: async (settings: Settings) => await axiosInstance.post("user/settings", settings),
+        sendTestPushNotification: async (settings: PushNotificationSettings) =>
+            await axiosInstance.post("user/pushNotificationTest", settings),
         getProfile: async () => await axiosInstance.get<UserModel>("user/profile"),
         saveProfile: async (req: ProfileModificationRequest) => await axiosInstance.post("user/profile", req),
         deleteProfile: async () => await axiosInstance.post("user/profile/deleteAccount"),
@@ -120,12 +136,23 @@ export const errorToStrings = (err: unknown) => {
     let strings: string[] = []
 
     if (axios.isAxiosError(err) && err.response) {
-        if (typeof err.response.data === "string") strings.push(err.response.data)
-        if (isMessageError(err)) strings.push(err.response.data.message)
-        if (isMessageArrayError(err)) strings = [...strings, ...err.response.data.errors]
+        if (isCommaFeedApplicationError(err)) {
+            strings.push(i18n._(applicationErrorMessages[err.response.data.type]))
+        } else {
+            if (typeof err.response.data === "string") strings.push(err.response.data)
+            if (isMessageError(err)) strings.push(err.response.data.message)
+            if (isMessageArrayError(err)) strings = [...strings, ...err.response.data.errors]
+        }
     }
 
     return strings
+}
+
+function isCommaFeedApplicationError(err: AxiosError): err is AxiosError<CommaFeedApplicationError> {
+    const data = err.response?.data
+    if (!data || typeof data !== "object" || !("type" in data)) return false
+    const type = data.type
+    return typeof type === "string" && Object.hasOwn(applicationErrorMessages, type)
 }
 
 function isMessageError(err: AxiosError): err is AxiosError<{ message: string }> {

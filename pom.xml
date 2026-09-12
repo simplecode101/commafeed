@@ -5,16 +5,13 @@
 
 	<groupId>com.commafeed</groupId>
 	<artifactId>commafeed</artifactId>
-	<version>5.11.1</version>
+	<version>7.3.2</version>
 	<name>CommaFeed</name>
 	<packaging>pom</packaging>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.release>17</maven.compiler.release>
-
-		<sonar.organization>athou</sonar.organization>
-		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<maven.compiler.release>25</maven.compiler.release>
 	</properties>
 
 	<build>
@@ -22,7 +19,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.14.1</version>
+				<version>3.16.0</version>
 				<configuration>
 					<parameters>true</parameters>
 
@@ -40,11 +37,6 @@
 						<arg>-Werror</arg>
 					</compilerArgs>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.sonarsource.scanner.maven</groupId>
-				<artifactId>sonar-maven-plugin</artifactId>
-				<version>5.2.0.4988</version>
 			</plugin>
 		</plugins>
 	</build>

@@ -17,10 +17,6 @@ msgstr ""
 msgid "<0>CommaFeed is an open-source project. Sources are hosted on </0><1>GitHub</1>."
 msgstr "<0>CommaFeed是一个开源项目，源码托管在 </0><1>GitHub</1>。"
 
-#: src/pages/app/FeedDetailsPage.tsx
-msgid "<0>Complete syntax is available </0><1>here</1><2>.</2>"
-msgstr "<0>可以使用完整的语法 </0><1>详情</1><2>.</2>"
-
 #: src/pages/auth/RegistrationPage.tsx
 msgid "<0>Have an account?</0><1>Log in!</1>"
 msgstr "<0>有帐号吗？</0><1>登录！</1>"
@@ -37,6 +33,10 @@ msgstr "<0>需要一个帐户？</0><1>注册！</1>"
 #: src/pages/app/AboutPage.tsx
 msgid "About"
 msgstr "关于"
+
+#: src/components/settings/PushNotificationSettings.tsx
+msgid "Access token"
+msgstr "访问令牌"
 
 #: src/pages/admin/AdminUsersPage.tsx
 msgid "Actions"
@@ -60,6 +60,10 @@ msgstr "添加用户"
 msgid "Admin"
 msgstr "管理员"
 
+#: src/pages/auth/InitialSetupPage.tsx
+msgid "Admin user name"
+msgstr "管理员用户名"
+
 #: src/components/content/add/CategorySelect.tsx
 #: src/components/header/Header.tsx
 #: src/components/sidebar/Tree.tsx
@@ -68,7 +72,6 @@ msgstr "管理员"
 msgid "All"
 msgstr "全部"
 
-#: src/components/settings/DisplaySettings.tsx
 #: src/components/settings/DisplaySettings.tsx
 msgid "Always"
 msgstr "总是"
@@ -92,6 +95,14 @@ msgstr "公告"
 #: src/components/settings/ProfileSettings.tsx
 msgid "API key"
 msgstr "API 密钥"
+
+#: src/components/settings/PushNotificationSettings.tsx
+msgid "API token"
+msgstr "API 令牌"
+
+#: src/components/settings/PushNotificationSettings.tsx
+msgid "App token"
+msgstr "应用令牌"
 
 #: src/pages/app/CategoryDetailsPage.tsx
 msgid "Are you sure you want to delete category <0>{categoryName}</0>?"
@@ -122,14 +133,15 @@ msgid "Asc"
 msgstr "升序"
 
 #: src/pages/app/FeedDetailsPage.tsx
-msgid "Available variables are 'title', 'content', 'url' 'author' and 'categories' and their content is converted to lower case to ease string comparison."
-msgstr "可用变量为'title'、'content'、'url'、'author'和'categories'，它们的内容被转换为小写以方便字符串比较。"
+msgid "Auto-mark as read"
+msgstr "自动标记为已读"
 
 #: src/components/content/add/Subscribe.tsx
 msgid "Back"
 msgstr "返回"
 
 #: src/pages/auth/PasswordRecoveryPage.tsx
+#: src/pages/auth/PasswordResetPage.tsx
 msgid "Back to log in"
 msgstr "返回登录"
 
@@ -137,17 +149,21 @@ msgstr "返回登录"
 msgid "Blue"
 msgstr "蓝"
 
-#: src/components/KeyboardShortcutsHelp.tsx
-msgid "Browser extension required for Chrome"
+#: src/pages/app/AboutPage.tsx
+msgid "Browser extension"
 msgstr "浏览器扩展"
 
-#: src/pages/app/AboutPage.tsx
-msgid "Browser extention"
+#: src/components/KeyboardShortcutsHelp.tsx
+msgid "Browser extension required for Chrome"
 msgstr "浏览器扩展"
 
 #: src/components/settings/DisplaySettings.tsx
 msgid "Browser tab"
 msgstr "浏览器标签页"
+
+#: src/pages/app/FeedDetailsPage.tsx
+msgid "Build a filter expression to indicate what you want to read. Entries that don't match will be marked as read automatically."
+msgstr "构建过滤表达式以指示您想阅读的内容。不匹配的条目将被自动标记为已读。"
 
 #: src/components/admin/UserEdit.tsx
 #: src/components/content/add/AddCategory.tsx
@@ -155,17 +171,14 @@ msgstr "浏览器标签页"
 #: src/components/MarkAllAsReadConfirmationDialog.tsx
 #: src/components/settings/CustomCodeSettings.tsx
 #: src/components/settings/ProfileSettings.tsx
-#: src/components/settings/ProfileSettings.tsx
+#: src/components/settings/PushNotificationSettings.tsx
 #: src/pages/admin/AdminUsersPage.tsx
 #: src/pages/app/CategoryDetailsPage.tsx
-#: src/pages/app/CategoryDetailsPage.tsx
-#: src/pages/app/FeedDetailsPage.tsx
 #: src/pages/app/FeedDetailsPage.tsx
 #: src/pages/app/TagDetailsPage.tsx
 msgid "Cancel"
 msgstr "取消"
 
-#: src/components/content/add/AddCategory.tsx
 #: src/components/content/add/AddCategory.tsx
 #: src/components/content/add/Subscribe.tsx
 #: src/pages/app/AboutPage.tsx
@@ -197,6 +210,10 @@ msgstr "CommaFeed的浏览器扩展版本：{browserExtensionVersion}。"
 msgid "CommaFeed is compatible with the Fever API. Use the following URL in your Fever-compatible mobile client. Login with your username and your <0>API key</0>."
 msgstr "CommaFeed 和 Fever API 兼容，可以在您Fever兼容的移动客户端中使用以下网址，通过用户名和<0>API密钥</0>登录。"
 
+#: src/components/settings/ProfileSettings.tsx
+msgid "CommaFeed is compatible with the Google Reader API. Use the following URL in your Google Reader-compatible mobile client. Login with your username and your <0>API key</0>."
+msgstr "CommaFeed 和 Google Reader API 兼容，可以在您Google Reader兼容的移动客户端中使用以下网址，通过用户名和<0>API密钥</0>登录。"
+
 #: src/pages/app/AboutPage.tsx
 msgid "CommaFeed next unread item"
 msgstr "CommaFeed 下一个未读项目"
@@ -221,9 +238,17 @@ msgstr "确认"
 msgid "Confirm password"
 msgstr "确认密码"
 
+#: src/pages/auth/PasswordResetPage.tsx
+msgid "Confirm Password"
+msgstr "确认密码"
+
 #: src/components/header/ProfileMenu.tsx
 msgid "Cozy"
 msgstr "宽松"
+
+#: src/pages/auth/InitialSetupPage.tsx
+msgid "Create Admin Account"
+msgstr "创建管理员帐号"
 
 #: src/components/KeyboardShortcutsHelp.tsx
 msgid "Ctrl"
@@ -258,11 +283,14 @@ msgstr "暗黑"
 msgid "Date created"
 msgstr "创建日期"
 
+#: src/pages/app/FeedDetailsPage.tsx
+msgid "days"
+msgstr "天"
+
 #: src/pages/app/CategoryDetailsPage.tsx
 msgid "Delete"
 msgstr "删除"
 
-#: src/components/settings/ProfileSettings.tsx
 #: src/components/settings/ProfileSettings.tsx
 msgid "Delete account"
 msgstr "删除帐号"
@@ -282,6 +310,10 @@ msgstr "降序"
 #: src/components/header/ProfileMenu.tsx
 msgid "Detailed"
 msgstr "详细"
+
+#: src/components/settings/DisplaySettings.tsx
+msgid "Disable \"Pull to refresh\" browser behavior"
+msgstr "禁用浏览器的“下拉刷新”功能"
 
 #: src/components/header/ProfileMenu.tsx
 #: src/components/settings/DisplaySettings.tsx
@@ -305,12 +337,11 @@ msgstr "拖动链接到书签栏"
 #: src/components/admin/UserEdit.tsx
 #: src/components/settings/ProfileSettings.tsx
 #: src/pages/admin/AdminUsersPage.tsx
-#: src/pages/auth/PasswordRecoveryPage.tsx
+#: src/pages/auth/InitialSetupPage.tsx
 #: src/pages/auth/PasswordRecoveryPage.tsx
 msgid "E-mail"
 msgstr "电子邮件"
 
-#: src/pages/auth/RegistrationPage.tsx
 #: src/pages/auth/RegistrationPage.tsx
 msgid "E-mail address"
 msgstr "电子邮件地址"
@@ -344,10 +375,6 @@ msgstr "条目头部"
 msgid "Error"
 msgstr "错误"
 
-#: src/pages/app/FeedDetailsPage.tsx
-msgid "Example: {example}."
-msgstr "示例：{示例}。"
-
 #: src/components/header/ProfileMenu.tsx
 msgid "Expanded"
 msgstr "展开"
@@ -365,7 +392,6 @@ msgstr "扩展选项"
 msgid "Feed name"
 msgstr "信息流名称"
 
-#: src/components/content/add/Subscribe.tsx
 #: src/components/content/add/Subscribe.tsx
 #: src/pages/app/FeedDetailsPage.tsx
 msgid "Feed URL"
@@ -432,6 +458,14 @@ msgstr "API 文档"
 msgid "Goodies"
 msgstr "好东西"
 
+#: src/components/settings/ProfileSettings.tsx
+msgid "Google Reader API"
+msgstr ""
+
+#: src/components/settings/ProfileSettings.tsx
+msgid "Google Reader API URL"
+msgstr ""
+
 #: src/components/settings/DisplaySettings.tsx
 msgid "Grape"
 msgstr "深紫"
@@ -447,10 +481,6 @@ msgstr "绿"
 #: src/pages/admin/AdminUsersPage.tsx
 msgid "Id"
 msgstr "序号"
-
-#: src/pages/app/FeedDetailsPage.tsx
-msgid "If not empty, an expression evaluating to 'true' or 'false'. If false, new entries for this feed will be marked as read automatically."
-msgstr "如果不为空，则表达式的计算结果为“真”或“假”。如果为“假”，则此信息流的新条目将自动标记为已读。"
 
 #: src/components/settings/DisplaySettings.tsx
 msgid "If the entry doesn't entirely fit on the screen"
@@ -471,6 +501,14 @@ msgstr "在展开视图中，滚动条目将它们标记为已读"
 #: src/components/settings/DisplaySettings.tsx
 msgid "Indigo"
 msgstr "靛蓝"
+
+#: src/pages/auth/InitialSetupPage.tsx
+msgid "Initial Setup"
+msgstr "初始化设置"
+
+#: src/pages/auth/PasswordResetPage.tsx
+msgid "Invalid password reset link. Please request a new one."
+msgstr "密码重置链接无效，请重新申请。"
 
 #: src/components/content/FeedEntryContextMenu.tsx
 #: src/components/content/FeedEntryFooter.tsx
@@ -533,7 +571,6 @@ msgid "Loading tags..."
 msgstr "正在加载标签..."
 
 #: src/pages/auth/LoginPage.tsx
-#: src/pages/auth/LoginPage.tsx
 #: src/pages/WelcomePage.tsx
 msgid "Log in"
 msgstr "登录"
@@ -569,6 +606,10 @@ msgstr "标记为已读"
 #: src/components/content/FeedEntryFooter.tsx
 msgid "Mark as read up to here"
 msgstr "标记为已读到这里"
+
+#: src/pages/app/FeedDetailsPage.tsx
+msgid "Mark entries in this feed as read after this number of days. Leave empty to disable."
+msgstr "在此天数后将此信息流中的条目标记为已读。留空以禁用。"
 
 #: src/components/header/ProfileMenu.tsx
 msgid "Metrics"
@@ -607,12 +648,15 @@ msgid "Navigate to the next category/feed with unread entries when marking all e
 msgstr "将所有条目标记为已读时导航到下一个包含未读条目的类别/信息流"
 
 #: src/components/settings/DisplaySettings.tsx
-#: src/components/settings/DisplaySettings.tsx
 msgid "Never"
 msgstr "从不"
 
 #: src/components/settings/ProfileSettings.tsx
 msgid "New password"
+msgstr "新密码"
+
+#: src/pages/auth/PasswordResetPage.tsx
+msgid "New Password"
 msgstr "新密码"
 
 #: src/pages/app/AboutPage.tsx
@@ -718,7 +762,6 @@ msgid "OPML export"
 msgstr "OPML 导出"
 
 #: src/components/content/add/ImportOpml.tsx
-#: src/components/content/add/ImportOpml.tsx
 msgid "OPML file"
 msgstr "OPML 文件"
 
@@ -743,18 +786,21 @@ msgid "Parent Category"
 msgstr "父类别"
 
 #: src/components/admin/UserEdit.tsx
+#: src/pages/auth/InitialSetupPage.tsx
 #: src/pages/auth/LoginPage.tsx
-#: src/pages/auth/LoginPage.tsx
-#: src/pages/auth/RegistrationPage.tsx
 #: src/pages/auth/RegistrationPage.tsx
 msgid "Password"
 msgstr "密码"
+
+#: src/hooks/useValidationRules.ts
+msgid "Password must be at least {minimumPasswordLength} characters"
+msgstr "密码最少需要 {minimumPasswordLength} 个字符"
 
 #: src/pages/auth/PasswordRecoveryPage.tsx
 msgid "Password Recovery"
 msgstr "密码恢复"
 
-#: src/components/settings/ProfileSettings.tsx
+#: src/hooks/useValidationRules.ts
 msgid "Passwords do not match"
 msgstr "密码不匹配"
 
@@ -779,6 +825,31 @@ msgstr "主颜色"
 msgid "Profile"
 msgstr "配置文件"
 
+#: src/components/settings/PushNotificationSettings.tsx
+msgid "Push notification service"
+msgstr "推送通知服务"
+
+#: src/pages/app/SettingsPage.tsx
+msgid "Push notifications"
+msgstr "推送通知"
+
+#: src/components/ReceivePushNotificationsChechbox.tsx
+msgid "Push notifications are not configured in your user settings."
+msgstr "您的用户设置中未配置推送通知。"
+
+#: src/components/ReceivePushNotificationsChechbox.tsx
+#: src/components/settings/PushNotificationSettings.tsx
+msgid "Push notifications are not enabled on this CommaFeed instance."
+msgstr "此 CommaFeed 实例未启用推送通知。"
+
+#: src/components/ReceivePushNotificationsChechbox.tsx
+msgid "Receive push notifications"
+msgstr "接收推送通知"
+
+#: src/components/settings/PushNotificationSettings.tsx
+msgid "Receive push notifications when new feed entries are discovered. Enable \"Receive push notifications\" in the settings of each feed for which you want to receive notifications."
+msgstr "当发现新的信息流条目时接收推送通知。在您希望接收通知的每个信息流设置中启用“接收推送通知”。"
+
 #: src/pages/auth/PasswordRecoveryPage.tsx
 msgid "Recover password"
 msgstr "找回密码"
@@ -796,11 +867,14 @@ msgstr "刷新"
 msgid "Registrations are closed on this CommaFeed instance"
 msgstr "此 CommaFeed 实例上的注册已关闭"
 
+#: src/pages/auth/PasswordResetPage.tsx
+msgid "Reset Password"
+msgstr "重置密码"
+
 #: src/pages/app/AboutPage.tsx
 msgid "REST API"
 msgstr "REST API"
 
-#: src/components/KeyboardShortcutsHelp.tsx
 #: src/components/KeyboardShortcutsHelp.tsx
 msgid "Right click"
 msgstr "右键单击"
@@ -808,6 +882,7 @@ msgstr "右键单击"
 #: src/components/admin/UserEdit.tsx
 #: src/components/settings/CustomCodeSettings.tsx
 #: src/components/settings/ProfileSettings.tsx
+#: src/components/settings/PushNotificationSettings.tsx
 #: src/pages/app/CategoryDetailsPage.tsx
 #: src/pages/app/FeedDetailsPage.tsx
 msgid "Save"
@@ -826,8 +901,6 @@ msgid "Scrolling"
 msgstr "滚动"
 
 #: src/components/header/Header.tsx
-#: src/components/header/Header.tsx
-#: src/components/sidebar/TreeSearch.tsx
 #: src/components/sidebar/TreeSearch.tsx
 msgid "Search"
 msgstr "搜索"
@@ -839,6 +912,10 @@ msgstr "选择下一个未读信息流/类别"
 #: src/components/KeyboardShortcutsHelp.tsx
 msgid "Select previous unread feed/category"
 msgstr "选择上一个未读信息流/类别"
+
+#: src/components/settings/PushNotificationSettings.tsx
+msgid "Server URL"
+msgstr "服务器网址"
 
 #: src/components/KeyboardShortcutsHelp.tsx
 msgid "Set focus on next entry without opening it"
@@ -864,8 +941,6 @@ msgstr "分享"
 msgid "Sharing sites"
 msgstr "共享站点"
 
-#: src/components/KeyboardShortcutsHelp.tsx
-#: src/components/KeyboardShortcutsHelp.tsx
 #: src/components/KeyboardShortcutsHelp.tsx
 msgid "Shift"
 msgstr "Shift"
@@ -915,7 +990,6 @@ msgid "Show unread count in tab title"
 msgstr "在标签页标题中显示未读数量"
 
 #: src/pages/auth/RegistrationPage.tsx
-#: src/pages/auth/RegistrationPage.tsx
 #: src/pages/WelcomePage.tsx
 msgid "Sign up"
 msgstr "注册"
@@ -924,7 +998,6 @@ msgstr "注册"
 msgid "Something bad just happened..."
 msgstr "刚刚发生了不好的事情……"
 
-#: src/components/KeyboardShortcutsHelp.tsx
 #: src/components/KeyboardShortcutsHelp.tsx
 msgid "Space"
 msgstr "空格"
@@ -941,7 +1014,6 @@ msgstr "星标"
 msgid "Starred"
 msgstr "已加星标"
 
-#: src/components/content/add/Subscribe.tsx
 #: src/components/content/add/Subscribe.tsx
 #: src/pages/app/AddPage.tsx
 msgid "Subscribe"
@@ -976,13 +1048,20 @@ msgid "System"
 msgstr "跟随系统"
 
 #: src/components/content/FeedEntryFooter.tsx
-#: src/components/content/FeedEntryFooter.tsx
 msgid "Tags"
 msgstr "标签"
 
 #: src/components/settings/DisplaySettings.tsx
 msgid "Teal"
 msgstr "青绿"
+
+#: src/components/settings/PushNotificationSettings.tsx
+msgid "Test"
+msgstr "测试"
+
+#: src/components/settings/PushNotificationSettings.tsx
+msgid "Test notification sent successfully."
+msgstr "测试通知发送成功。"
 
 #: src/components/content/add/Subscribe.tsx
 msgid "The URL for the feed you want to subscribe to. You can also use the website's url directly and CommaFeed will try to find the feed in the page."
@@ -992,9 +1071,18 @@ msgstr "您要订阅的信息流的网址。您也可以直接使用网站的网
 msgid "Theme"
 msgstr "主题"
 
+#. placeholder {0}: feed.filterLegacy
+#: src/pages/app/FeedDetailsPage.tsx
+msgid "This feed has a legacy filter that cannot be edited and is not applied. Please recreate the filter using the new expression editor. The legacy filter expression was: <0>{0}</0>"
+msgstr "此信息流具有无法编辑且未应用的旧版过滤器。请使用新的表达式编辑器重新创建过滤器。旧版过滤器表达式为：<0>{0}</0>"
+
 #: src/components/settings/ProfileSettings.tsx
-msgid "This is your API key. It can be used for some read-only API operations and grants access to the Fever API. Use the form at the bottom of the page to generate a new API key"
-msgstr "这是您的API 密钥，它可以被用于Fever API的只读操作及访问授权。使用页面底部的表单生成一个新的API密钥。"
+msgid "This is your API key. It can be used for some read-only API operations and grants access to the Fever API and the Google Reader API. Use the form at the bottom of the page to generate a new API key"
+msgstr "这是您的 API 密钥。它可用于某些只读 API 操作，并授予对 Fever API 和 Google Reader API 的访问权限。使用页面底部的表单生成新的 API 密钥"
+
+#: src/components/settings/DisplaySettings.tsx
+msgid "This setting can cause scrolling issues on some browsers (e.g. Safari)"
+msgstr "此设置在部分浏览器（例如 Safari）中可能导致滚动问题"
 
 #: src/components/KeyboardShortcutsHelp.tsx
 msgid "Toggle read status of current entry"
@@ -1007,6 +1095,10 @@ msgstr "切换侧边栏"
 #: src/components/KeyboardShortcutsHelp.tsx
 msgid "Toggle starred status of current entry"
 msgstr "切换当前条目的星标状态"
+
+#: src/components/settings/PushNotificationSettings.tsx
+msgid "Topic"
+msgstr "主题"
 
 #: src/pages/auth/LoginPage.tsx
 msgid "Try out CommaFeed with the demo account: demo/demo"
@@ -1027,15 +1119,17 @@ msgid "Unstar"
 msgstr "取消星标"
 
 #: src/pages/app/FeedDetailsPage.tsx
-#: src/pages/app/FeedDetailsPage.tsx
 msgid "Unsubscribe"
 msgstr "取消订阅"
+
+#: src/components/settings/PushNotificationSettings.tsx
+msgid "User key"
+msgstr "用户密钥"
 
 #: src/components/settings/ProfileSettings.tsx
 msgid "User name"
 msgstr "用户名"
 
-#: src/pages/auth/LoginPage.tsx
 #: src/pages/auth/LoginPage.tsx
 msgid "User Name or E-mail"
 msgstr "用户名或电子邮件"
@@ -1052,6 +1146,14 @@ msgstr "警告"
 msgid "Website"
 msgstr "网站"
 
+#: src/pages/auth/InitialSetupPage.tsx
+msgid "Welcome! This appears to be the first time you're running CommaFeed. Please create an administrator account to get started."
+msgstr "欢迎！当前页仅当您第一次使用CommaFeed时出现，请创建一个管理员帐号以开始使用。"
+
+#: src/app/client.ts
+msgid "Wrong username or password"
+msgstr "用户名或密码错误"
+
 #: src/components/settings/DisplaySettings.tsx
 msgid "Yellow"
 msgstr "黄"
@@ -1063,3 +1165,7 @@ msgstr "您还没有任何订阅。"
 #: src/components/header/ProfileMenu.tsx
 msgid "Your feeds have been queued for refresh."
 msgstr "您的订阅已经进入刷新队列。"
+
+#: src/pages/auth/PasswordResetPage.tsx
+msgid "Your password has been changed. You can now log in with your new password."
+msgstr "您的密码已更改。您现在可以使用新密码登录。"
